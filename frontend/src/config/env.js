@@ -21,5 +21,5 @@ export const API_URL =
 export const EMERGENCY_NUMBERS = {
   samu: "192",
   bombeiros: "193",
-  policia: "190"
+  policia: "190",
 };

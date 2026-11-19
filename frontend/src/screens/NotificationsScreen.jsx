@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { AppAlert as Alert } from "@/services/appAlert";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -11,7 +17,7 @@ import { getApiErrorMessage } from "@/utils/apiError";
 const GROUP_LABEL = {
   hoje: "HOJE",
   ontem: "ONTEM",
-  semana: "ESTA SEMANA"
+  semana: "ESTA SEMANA",
 };
 export function NotificationsScreen() {
   const navigation = useNavigation();
@@ -20,14 +26,18 @@ export function NotificationsScreen() {
   const [loadError, setLoadError] = useState(false);
   useEffect(() => {
     let active = true;
-    notificationsService.list().then(data => {
-      if (active) setItems(data);
-    }).catch(error => {
-      console.error("Não foi possível carregar as notificações.", error);
-      if (active) setLoadError(true);
-    }).finally(() => {
-      if (active) setLoading(false);
-    });
+    notificationsService
+      .list()
+      .then((data) => {
+        if (active) setItems(data);
+      })
+      .catch((error) => {
+        console.error("Não foi possível carregar as notificações.", error);
+        if (active) setLoadError(true);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
@@ -36,103 +46,163 @@ export function NotificationsScreen() {
     if (notification.lida) return;
     try {
       await notificationsService.markAsRead(notification.id);
-      setItems(prev => prev.map(n => n.id === notification.id ? {
-        ...n,
-        lida: true
-      } : n));
+      setItems((prev) =>
+        prev.map((n) =>
+          n.id === notification.id
+            ? {
+                ...n,
+                lida: true,
+              }
+            : n,
+        ),
+      );
     } catch (error) {
-      Alert.alert("Não foi possível atualizar a notificação", getApiErrorMessage(error, "Tente novamente."));
+      Alert.alert(
+        "Não foi possível atualizar a notificação",
+        getApiErrorMessage(error, "Tente novamente."),
+      );
     }
   }
   const groups = ["hoje", "ontem", "semana"];
-  return <ScrollView style={{
-    flex: 1,
-    backgroundColor: colors.bg
-  }} contentContainerStyle={{
-    padding: spacing.lg,
-    paddingTop: spacing.xl
-  }}>
+  return (
+    <ScrollView
+      style={{
+        flex: 1,
+        backgroundColor: colors.bg,
+      }}
+      contentContainerStyle={{
+        padding: spacing.lg,
+        paddingTop: spacing.xl,
+      }}
+    >
       <ScreenHeader title="Notificações" onBack={() => navigation.goBack()} />
 
-      {loading ? <ActivityIndicator color={colors.primary} /> : loadError ? <Text style={{
-      fontFamily: fonts.regular,
-      fontSize: 12.5,
-      color: colors.inkSoft,
-      textAlign: "center",
-      marginTop: 20
-    }}>
-          Não foi possível carregar as notificações. Verifique a conexão e tente novamente.
-        </Text> : items.length === 0 ? <Text style={{
-      fontFamily: fonts.regular,
-      fontSize: 12.5,
-      color: colors.inkSoft,
-      textAlign: "center",
-      marginTop: 20
-    }}>
+      {loading ? (
+        <ActivityIndicator color={colors.primary} />
+      ) : loadError ? (
+        <Text
+          style={{
+            fontFamily: fonts.regular,
+            fontSize: 12.5,
+            color: colors.inkSoft,
+            textAlign: "center",
+            marginTop: 20,
+          }}
+        >
+          Não foi possível carregar as notificações. Verifique a conexão e tente
+          novamente.
+        </Text>
+      ) : items.length === 0 ? (
+        <Text
+          style={{
+            fontFamily: fonts.regular,
+            fontSize: 12.5,
+            color: colors.inkSoft,
+            textAlign: "center",
+            marginTop: 20,
+          }}
+        >
           Nenhuma notificação por aqui ainda.
-        </Text> : groups.map(grupo => {
-      const groupItems = items.filter(n => n.grupo === grupo);
-      if (groupItems.length === 0) return null;
-      return <View key={grupo} style={{
-        marginBottom: 20
-      }}>
-              <Text style={{
-          fontFamily: fonts.bold,
-          fontSize: 11,
-          color: colors.inkFaint,
-          letterSpacing: 0.5,
-          marginBottom: 10
-        }}>
+        </Text>
+      ) : (
+        groups.map((grupo) => {
+          const groupItems = items.filter((n) => n.grupo === grupo);
+          if (groupItems.length === 0) return null;
+          return (
+            <View
+              key={grupo}
+              style={{
+                marginBottom: 20,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: fonts.bold,
+                  fontSize: 11,
+                  color: colors.inkFaint,
+                  letterSpacing: 0.5,
+                  marginBottom: 10,
+                }}
+              >
                 {GROUP_LABEL[grupo]}
               </Text>
-              <View style={{
-          gap: 8
-        }}>
-                {groupItems.map(n => <Pressable key={n.id} onPress={() => handlePress(n)} style={{
-            flexDirection: "row",
-            alignItems: "flex-start",
-            gap: 10,
-            backgroundColor: colors.panel,
-            borderRadius: radius.lg,
-            padding: 13
-          }}>
-                    <View style={{
-              width: 32,
-              height: 32,
-              borderRadius: 10,
-              backgroundColor: colors.primarySoft,
-              alignItems: "center",
-              justifyContent: "center"
-            }}>
-                      <Ionicons name={n.icon} size={16} color={colors.primary} />
+              <View
+                style={{
+                  gap: 8,
+                }}
+              >
+                {groupItems.map((n) => (
+                  <Pressable
+                    key={n.id}
+                    onPress={() => handlePress(n)}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                      gap: 10,
+                      backgroundColor: colors.panel,
+                      borderRadius: radius.lg,
+                      padding: 13,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: 10,
+                        backgroundColor: colors.primarySoft,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons
+                        name={n.icon}
+                        size={16}
+                        color={colors.primary}
+                      />
                     </View>
-                    <View style={{
-              flex: 1
-            }}>
-                      <Text style={{
-                fontFamily: fonts.semiBold,
-                fontSize: 13,
-                color: colors.ink
-              }}>{n.titulo}</Text>
-                      <Text style={{
-                fontFamily: fonts.regular,
-                fontSize: 11.5,
-                color: colors.inkSoft,
-                marginTop: 2
-              }}>
+                    <View
+                      style={{
+                        flex: 1,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: fonts.semiBold,
+                          fontSize: 13,
+                          color: colors.ink,
+                        }}
+                      >
+                        {n.titulo}
+                      </Text>
+                      <Text
+                        style={{
+                          fontFamily: fonts.regular,
+                          fontSize: 11.5,
+                          color: colors.inkSoft,
+                          marginTop: 2,
+                        }}
+                      >
                         {n.descricao}
                       </Text>
                     </View>
-                    {!n.lida && <View style={{
-              width: 7,
-              height: 7,
-              borderRadius: 3.5,
-              backgroundColor: colors.primary,
-              marginTop: 4
-            }} />}
-                  </Pressable>)}
+                    {!n.lida && (
+                      <View
+                        style={{
+                          width: 7,
+                          height: 7,
+                          borderRadius: 3.5,
+                          backgroundColor: colors.primary,
+                          marginTop: 4,
+                        }}
+                      />
+                    )}
+                  </Pressable>
+                ))}
               </View>
-            </View>;
-    })}
-    </ScrollView>;
+            </View>
+          );
+        })
+      )}
+    </ScrollView>
+  );
 }

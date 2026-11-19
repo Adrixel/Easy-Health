@@ -81,35 +81,43 @@ O valor deve ser uma URL acessível pelo aparelho, como o IP local do computador
 rede Wi-Fi ou o endereço público do backend. `localhost` e `10.0.2.2` não funcionam em
 um celular físico.
 
-Gere o APK com:
+Gere o APK de desenvolvimento com:
 
 ```bash
-npx eas-cli@latest build --platform android --profile preview
+npx eas-cli@latest build --platform android --profile development
 ```
 
-Quando a compilação terminar, baixe o APK pelo link exibido no terminal ou no painel do
-projeto Expo e instale-o no dispositivo Android.
+Instale o APK no dispositivo Android e inicie o bundler com:
+
+```bash
+npx expo start --dev-client
+```
+
+O perfil `preview` continua disponível para gerar um APK sem o cliente de desenvolvimento.
 
 ## Login com Google
 
-O botão Google está disponível nas telas de login e cadastro. O login só é habilitado depois
-de configurar OAuth no [Google Cloud Console](https://console.cloud.google.com/apis/credentials):
+O botão Google está disponível nas telas de login e cadastro. O login nativo do Google não
+funciona no Expo Go; use o development build acima. Configure OAuth no
+[Google Cloud Console](https://console.cloud.google.com/apis/credentials):
 
-1. Crie um OAuth Client ID do tipo **Web application** e outro do tipo **Android**; crie
-   também um de **iOS** se essa plataforma for usada.
+1. Crie OAuth Client IDs do tipo **Web application** e **Android**; crie também um de
+   **iOS** se essa plataforma for usada.
 2. No cliente Android, use o pacote `br.com.easyhealth.app` e o SHA-1 do certificado que
-   assina o APK (consulte `npx eas-cli@latest credentials --platform android`).
-3. Configure `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`,
-   `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` e, se necessário,
-   `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` no ambiente em que o frontend será compilado/iniciado.
-4. Configure `GOOGLE_OAUTH_CLIENT_IDS` no backend com os mesmos Client IDs separados por
-   vírgula. Exemplo: `id-web.apps.googleusercontent.com,id-android.apps.googleusercontent.com`.
-5. Reinicie/reconstrua o frontend e o backend para aplicar a configuração.
+   assina o development build. Consulte `npx eas-cli@latest credentials --platform android`.
+3. Configure `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` em `frontend/.env.local` para builds locais
+   e no ambiente **preview** do projeto EAS. O arquivo `frontend/.env.example` serve como modelo.
+   Para iOS, configure também `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`.
+4. Configure `GOOGLE_OAUTH_CLIENT_IDS` no backend com o Client ID Web (a audiência do ID token).
+   No Compose, use o `.env` da raiz; para o backend executado diretamente, defina essa variável
+   no ambiente do processo.
+5. Reconstrua o development build depois de instalar dependências nativas e reinicie o backend
+   após alterar as variáveis.
 
-Os Client IDs são identificadores públicos do OAuth; não coloque **Client Secrets** no app
-nem no arquivo `.env` do frontend. O backend valida o ID token com o Google, confere emissor,
-validade, e-mail verificado e audiência configurada antes de criar a sessão. Sem esses IDs,
-o botão informa que o login ainda precisa ser configurado.
+Os Client IDs são identificadores públicos do OAuth; não coloque **Client Secrets** no app.
+O backend valida o ID token com o Google, confere emissor, validade, e-mail verificado e
+audiência configurada antes de criar a sessão. Sem esses IDs, o botão informa que o login
+precisa ser configurado.
 
 ## Histórico e documentos
 

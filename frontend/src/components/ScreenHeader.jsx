@@ -10,39 +10,69 @@ export function ScreenHeader({
   rightIcon,
   onPressRight,
   rightActive,
-  dark
+  dark,
 }) {
   const fg = dark ? colors.white : colors.ink;
   const accent = dark ? colors.white : colors.primary;
-  return <View style={{
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-    minHeight: 28
-  }}>
-      {onBack ? <Pressable onPress={onBack} hitSlop={10} style={{
-      width: 32
-    }}>
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 16,
+        minHeight: 28,
+      }}
+    >
+      {onBack ? (
+        <Pressable
+          onPress={onBack}
+          hitSlop={10}
+          style={{
+            width: 32,
+          }}
+        >
           <Ionicons name="chevron-back" size={22} color={accent} />
-        </Pressable> : <View style={{
-      width: 32
-    }} />}
-      <Text style={{
-      flex: 1,
-      textAlign: "center",
-      fontFamily: fonts.bold,
-      fontSize: 16.5,
-      color: fg
-    }}>
+        </Pressable>
+      ) : (
+        <View
+          style={{
+            width: 32,
+          }}
+        />
+      )}
+      <Text
+        style={{
+          flex: 1,
+          textAlign: "center",
+          fontFamily: fonts.bold,
+          fontSize: 16.5,
+          color: fg,
+        }}
+      >
         {title}
       </Text>
-      {rightIcon ? <Pressable onPress={onPressRight} hitSlop={10} style={{
-      width: 32,
-      alignItems: "flex-end"
-    }}>
-          <Ionicons name={rightIcon} size={21} color={rightActive ? colors.alert : accent} />
-        </Pressable> : <View style={{
-      width: 32
-    }} />}
-    </View>;
+      {rightIcon ? (
+        <Pressable
+          onPress={onPressRight}
+          hitSlop={10}
+          style={{
+            width: 32,
+            alignItems: "flex-end",
+          }}
+        >
+          <Ionicons
+            name={rightIcon}
+            size={21}
+            color={rightActive ? colors.alert : accent}
+          />
+        </Pressable>
+      ) : (
+        <View
+          style={{
+            width: 32,
+          }}
+        />
+      )}
+    </View>
+  );
 }

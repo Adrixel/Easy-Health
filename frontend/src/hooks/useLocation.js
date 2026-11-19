@@ -10,39 +10,37 @@ export function useLocation() {
     coords: null,
     loading: false,
     error: null,
-    permissionDenied: false
+    permissionDenied: false,
   });
   const requestLocation = useCallback(async () => {
-    setState(s => ({
+    setState((s) => ({
       ...s,
       loading: true,
-      error: null
+      error: null,
     }));
-    const {
-      status
-    } = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
       setState({
         coords: null,
         loading: false,
         error: "Permissão negada",
-        permissionDenied: true
+        permissionDenied: true,
       });
       return null;
     }
     try {
       const position = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced
+        accuracy: Location.Accuracy.Balanced,
       });
       const coords = {
         latitude: position.coords.latitude,
-        longitude: position.coords.longitude
+        longitude: position.coords.longitude,
       };
       setState({
         coords,
         loading: false,
         error: null,
-        permissionDenied: false
+        permissionDenied: false,
       });
       return coords;
     } catch {
@@ -50,7 +48,7 @@ export function useLocation() {
         coords: null,
         loading: false,
         error: "Não foi possível obter sua localização",
-        permissionDenied: false
+        permissionDenied: false,
       });
       return null;
     }
@@ -60,6 +58,6 @@ export function useLocation() {
   }, [requestLocation]);
   return {
     ...state,
-    refresh: requestLocation
+    refresh: requestLocation,
   };
 }

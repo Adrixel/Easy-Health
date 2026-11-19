@@ -1,34 +1,41 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { AppAlert as Alert } from '@/services/appAlert';
-import { useNavigation } from '@react-navigation/native';
-import { authService } from '../services/authService';
-import { getErrorMessage } from '../utils/apiError';
-import { GoogleSignInButton } from '@/components/GoogleSignInButton';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { AppAlert as Alert } from "@/services/appAlert";
+import { useNavigation } from "@react-navigation/native";
+import { authService } from "../services/authService";
+import { getErrorMessage } from "../utils/apiError";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 const RegisterScreen = ({
   navigation: passedNavigation,
   route,
-  onAuthenticated: propOnAuthenticated
+  onAuthenticated: propOnAuthenticated,
 }) => {
   const defaultNavigation = useNavigation();
   const navigation = passedNavigation ?? defaultNavigation;
-  const [nome, setNome] = useState('');
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [confirmSenha, setConfirmSenha] = useState('');
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [confirmSenha, setConfirmSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const onAuthenticated = propOnAuthenticated ?? route?.params?.onAuthenticated;
   const handleRegister = async () => {
     if (!nome.trim() || !email.trim() || !senha.trim()) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos.');
+      Alert.alert("Erro", "Por favor, preencha todos os campos.");
       return;
     }
     if (senha !== confirmSenha) {
-      Alert.alert('Erro', 'As senhas não correspondem.');
+      Alert.alert("Erro", "As senhas não correspondem.");
       return;
     }
     if (senha.length < 8 || senha.length > 72) {
-      Alert.alert('Erro', 'A senha deve ter entre 8 e 72 caracteres.');
+      Alert.alert("Erro", "A senha deve ter entre 8 e 72 caracteres.");
       return;
     }
     setLoading(true);
@@ -36,96 +43,150 @@ const RegisterScreen = ({
       await authService.register({
         nome: nome.trim(),
         email: email.trim().toLowerCase(),
-        senha
+        senha,
       });
-      Alert.alert('Sucesso', 'Conta criada!');
+      Alert.alert("Sucesso", "Conta criada!");
       if (onAuthenticated) {
         onAuthenticated();
       } else {
         try {
           navigation.reset({
             index: 0,
-            routes: [{
-              name: 'MainTabs'
-            }]
+            routes: [
+              {
+                name: "MainTabs",
+              },
+            ],
           });
         } catch {
           try {
-            navigation.navigate('MainTabs', {
-              screen: 'Home'
+            navigation.navigate("MainTabs", {
+              screen: "Home",
             });
           } catch {}
         }
       }
     } catch (err) {
-      Alert.alert('Erro', getErrorMessage(err, 'Não foi possível criar sua conta.'));
+      Alert.alert(
+        "Erro",
+        getErrorMessage(err, "Não foi possível criar sua conta."),
+      );
     } finally {
       setLoading(false);
     }
   };
-  return <View style={styles.container}>
+  return (
+    <View style={styles.container}>
       <Text style={styles.title}>Criar Conta</Text>
 
-      <TextInput style={styles.input} placeholder="Nome completo" placeholderTextColor="#999" value={nome} onChangeText={setNome} editable={!loading} />
-      <TextInput style={styles.input} placeholder="Email" placeholderTextColor="#999" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" editable={!loading} />
-      <TextInput style={styles.input} placeholder="Senha" placeholderTextColor="#999" value={senha} onChangeText={setSenha} secureTextEntry editable={!loading} />
-      <TextInput style={styles.input} placeholder="Confirmar Senha" placeholderTextColor="#999" value={confirmSenha} onChangeText={setConfirmSenha} secureTextEntry editable={!loading} />
+      <TextInput
+        style={styles.input}
+        placeholder="Nome completo"
+        placeholderTextColor="#999"
+        value={nome}
+        onChangeText={setNome}
+        editable={!loading}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        placeholderTextColor="#999"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        editable={!loading}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Senha"
+        placeholderTextColor="#999"
+        value={senha}
+        onChangeText={setSenha}
+        secureTextEntry
+        editable={!loading}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Confirmar Senha"
+        placeholderTextColor="#999"
+        value={confirmSenha}
+        onChangeText={setConfirmSenha}
+        secureTextEntry
+        editable={!loading}
+      />
 
-      <TouchableOpacity style={[styles.button, loading && styles.disabled]} onPress={handleRegister} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Registrar</Text>}
+      <TouchableOpacity
+        style={[styles.button, loading && styles.disabled]}
+        onPress={handleRegister}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Registrar</Text>
+        )}
       </TouchableOpacity>
-      <GoogleSignInButton onAuthenticated={onAuthenticated ?? (() => navigation.navigate('MainTabs', {
-        screen: 'Home'
-      }))} disabled={loading} />
+      <GoogleSignInButton
+        onAuthenticated={
+          onAuthenticated ??
+          (() =>
+            navigation.navigate("MainTabs", {
+              screen: "Home",
+            }))
+        }
+        disabled={loading}
+      />
 
       <TouchableOpacity onPress={() => navigation.goBack()} disabled={loading}>
         <Text style={styles.link}>Já tem conta? Faça login</Text>
       </TouchableOpacity>
-    </View>;
+    </View>
+  );
 };
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: "center",
     padding: 20,
-    backgroundColor: '#f5f5f5'
+    backgroundColor: "#f5f5f5",
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 20,
-    textAlign: 'center',
-    color: '#333'
+    textAlign: "center",
+    color: "#333",
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     borderRadius: 8,
     padding: 12,
     marginBottom: 15,
-    backgroundColor: '#fff',
-    color: '#333'
+    backgroundColor: "#fff",
+    color: "#333",
   },
   button: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: "#4CAF50",
     padding: 15,
     borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 15
+    alignItems: "center",
+    marginBottom: 15,
   },
   disabled: {
-    opacity: 0.6
+    opacity: 0.6,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: "bold",
   },
   link: {
-    color: '#4CAF50',
-    textAlign: 'center',
-    fontSize: 14
-  }
+    color: "#4CAF50",
+    textAlign: "center",
+    fontSize: 14,
+  },
 });
 export default RegisterScreen;
 export { RegisterScreen };
