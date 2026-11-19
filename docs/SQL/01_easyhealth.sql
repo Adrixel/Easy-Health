@@ -22,8 +22,21 @@ CREATE TABLE IF NOT EXISTS users (
     contato_emergencia_parentesco text,
     push_token text,
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+        updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    cargo varchar(16) NOT NULL DEFAULT 'paciente',
+    CONSTRAINT chk_users_cargo CHECK (cargo IN ('paciente', 'funcionario', 'medico', 'dono'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Migração: acrescenta a coluna cargo em bancos que já existiam, sem apagar dados.
+-- Só altera se a coluna ainda não existir, então é seguro rodar em toda inicialização.
+SET @add_cargo = IF(
+    (SELECT COUNT(*) FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'cargo') = 0,
+    'ALTER TABLE users ADD COLUMN cargo varchar(16) NOT NULL DEFAULT ''paciente'', ADD CONSTRAINT chk_users_cargo CHECK (cargo IN (''paciente'', ''funcionario'', ''medico'', ''dono''))',
+    'SELECT 1');
+PREPARE stmt_cargo FROM @add_cargo;
+EXECUTE stmt_cargo;
+DEALLOCATE PREPARE stmt_cargo;
 
 CREATE TABLE IF NOT EXISTS auth_tokens (
     token_hash varchar(64) PRIMARY KEY,
