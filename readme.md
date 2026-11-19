@@ -110,11 +110,11 @@ consulta pode adicionar um evento ao calendário do dispositivo (ou baixar um ar
 pela web), e os detalhes da consulta permitem gerar um resumo informativo em PDF. A foto de
 perfil é selecionada na galeria e salva após validação e compressão pela API.
 
-O login com Google fica disponível após configurar Client IDs OAuth no Google Cloud Console:
-`EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` e
-`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID` (conforme as plataformas usadas) no frontend, e
-`GOOGLE_OAUTH_CLIENT_IDS` no backend. Configure o cliente Android para o pacote
-`br.com.easyhealth.app` e o SHA-1 do certificado que assina o APK. Nunca coloque Client
+O login com Google requer um development build (não funciona no Expo Go) e Client IDs OAuth
+configurados no Google Cloud Console. O frontend precisa de
+`EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`; o backend deve aceitar esse ID em
+`GOOGLE_OAUTH_CLIENT_IDS`. Configure o cliente Android para o pacote
+`br.com.easyhealth.app` e o SHA-1 do certificado que assina o build. Nunca coloque Client
 Secrets no aplicativo. O passo a passo está no [README do frontend](./frontend/README.md#login-com-google).
 
 Configure a URL da API por `EXPO_PUBLIC_API_URL` ou em `frontend/app.json`, no campo

@@ -22,37 +22,66 @@ export function RootNavigator({
   isAuthenticated,
   isGuest,
   onAuthenticated,
-  onGuest
+  onGuest,
 }) {
-  return <Stack.Navigator screenOptions={{
-    headerShown: false,
-    headerTintColor: colors.ink,
-    headerTitleStyle: {
-      fontFamily: fonts.semiBold,
-      fontSize: 15
-    },
-    headerStyle: {
-      backgroundColor: colors.bg
-    },
-    headerShadowVisible: false
-  }}>
-      {!isAuthenticated && !isGuest ? <>
-          <Stack.Screen name="Onboarding">{() => <OnboardingScreen onGuest={onGuest} />}</Stack.Screen>
-          <Stack.Screen name="Login">{() => <LoginScreen onAuthenticated={onAuthenticated} />}</Stack.Screen>
-          <Stack.Screen name="Register">{() => <RegisterScreen onAuthenticated={onAuthenticated} />}</Stack.Screen>
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-        </> : <>
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        headerTintColor: colors.ink,
+        headerTitleStyle: {
+          fontFamily: fonts.semiBold,
+          fontSize: 15,
+        },
+        headerStyle: {
+          backgroundColor: colors.bg,
+        },
+        headerShadowVisible: false,
+      }}
+    >
+      {!isAuthenticated && !isGuest ? (
+        <>
+          <Stack.Screen name="Onboarding">
+            {() => <OnboardingScreen onGuest={onGuest} />}
+          </Stack.Screen>
+          <Stack.Screen name="Login">
+            {() => <LoginScreen onAuthenticated={onAuthenticated} />}
+          </Stack.Screen>
+          <Stack.Screen name="Register">
+            {() => <RegisterScreen onAuthenticated={onAuthenticated} />}
+          </Stack.Screen>
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPasswordScreen}
+          />
+        </>
+      ) : (
+        <>
           <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
           <Stack.Screen name="FirstAid" component={FirstAidScreen} />
-          <Stack.Screen name="FirstAidDetail" component={FirstAidDetailScreen} />
+          <Stack.Screen
+            name="FirstAidDetail"
+            component={FirstAidDetailScreen}
+          />
           <Stack.Screen name="Emergency" component={EmergencyScreen} />
-          <Stack.Screen name="EstablishmentDetail" component={EstablishmentDetailScreen} />
+          <Stack.Screen
+            name="EstablishmentDetail"
+            component={EstablishmentDetailScreen}
+          />
           <Stack.Screen name="Booking" component={BookingScreen} />
-          <Stack.Screen name="BookingConfirmation" component={BookingConfirmationScreen} />
-          <Stack.Screen name="ConsultationDetail" component={ConsultationDetailScreen} />
+          <Stack.Screen
+            name="BookingConfirmation"
+            component={BookingConfirmationScreen}
+          />
+          <Stack.Screen
+            name="ConsultationDetail"
+            component={ConsultationDetailScreen}
+          />
           <Stack.Screen name="Notifications" component={NotificationsScreen} />
           <Stack.Screen name="Favorites" component={FavoritesScreen} />
           <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-        </>}
-    </Stack.Navigator>;
+        </>
+      )}
+    </Stack.Navigator>
+  );
 }

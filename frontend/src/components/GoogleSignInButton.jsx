@@ -1,47 +1,61 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, Text } from "react-native";
+import { ActivityIndicator, Platform, Pressable, Text } from "react-native";
+import Constants from "expo-constants";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  isSuccessResponse,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 import { authService } from "@/services/authService";
 import { getApiErrorMessage } from "@/utils/apiError";
 import { useToast } from "@/components/Toast";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const PLACEHOLDER_CLIENT_ID = "google-client-not-configured.apps.googleusercontent.com";
+const PLACEHOLDER_CLIENT_ID =
+  "google-client-not-configured.apps.googleusercontent.com";
 
-export function GoogleSignInButton({
-  onAuthenticated,
-  disabled = false
-}) {
+export function GoogleSignInButton({ onAuthenticated, disabled = false }) {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const handledResponse = useRef(null);
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
   const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
   const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
-  const configured = Boolean(webClientId || androidClientId || iosClientId);
+  const configured = Boolean(
+    webClientId && (Platform.OS !== "ios" || iosClientId),
+  );
   const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
     webClientId: webClientId || PLACEHOLDER_CLIENT_ID,
     androidClientId: androidClientId || PLACEHOLDER_CLIENT_ID,
     iosClientId: iosClientId || PLACEHOLDER_CLIENT_ID,
     selectAccount: true,
-    language: "pt-BR"
+    language: "pt-BR",
   });
 
   useEffect(() => {
     let active = true;
     async function finishGoogleSignIn() {
+      if (Platform.OS !== "web") return;
       if (response?.type === "error") {
-        showToast(response.error?.message || "Não foi possível autenticar com o Google.");
+        showToast(
+          response.error?.message ||
+            "Não foi possível autenticar com o Google.",
+        );
         return;
       }
       if (response?.type !== "success") return;
       if (handledResponse.current === response) return;
       handledResponse.current = response;
-      const idToken = response.authentication?.idToken || response.params?.id_token;
+      const idToken =
+        response.authentication?.idToken || response.params?.id_token;
       if (!idToken) {
-        showToast("O Google não retornou um token de identidade. Tente novamente.");
+        showToast(
+          "O Google não retornou um token de identidade. Tente novamente.",
+        );
         return;
       }
       setLoading(true);
@@ -49,7 +63,9 @@ export function GoogleSignInButton({
         await authService.loginWithGoogle(idToken);
         onAuthenticated();
       } catch (error) {
-        showToast(getApiErrorMessage(error, "Não foi possível entrar com o Google."));
+        showToast(
+          getApiErrorMessage(error, "Não foi possível entrar com o Google."),
+        );
       } finally {
         if (active) setLoading(false);
       }
@@ -61,45 +77,105 @@ export function GoogleSignInButton({
   }, [response, onAuthenticated, showToast]);
 
   async function handlePress() {
-    if (!configured) {
-      showToast("O login Google ainda precisa ser configurado para este ambiente.");
+    if (Constants.appOwnership === "expo") {
+      showToast(
+        "O login Google requer um development build; o Expo Go não oferece suporte.",
+      );
       return;
     }
-    if (!request || loading || disabled) return;
+    if (!configured) {
+      showToast(
+        "Configure o Client ID OAuth Web neste ambiente antes de entrar com o Google.",
+      );
+      return;
+    }
+    if (loading || disabled) return;
+    if (Platform.OS === "web") {
+      if (!request) return;
+      try {
+        await promptAsync();
+      } catch (error) {
+        showToast(
+          getApiErrorMessage(error, "Não foi possível abrir o login Google."),
+        );
+      }
+      return;
+    }
+
+    setLoading(true);
     try {
-      await promptAsync();
+      GoogleSignin.configure({
+        webClientId,
+        ...(iosClientId ? { iosClientId } : {}),
+        offlineAccess: false,
+      });
+      await GoogleSignin.hasPlayServices({
+        showPlayServicesUpdateDialog: true,
+      });
+      const result = await GoogleSignin.signIn();
+      if (!isSuccessResponse(result)) return;
+      const idToken = result.data.idToken;
+      if (!idToken) {
+        showToast(
+          "O Google não retornou um token de identidade. Tente novamente.",
+        );
+        return;
+      }
+      await authService.loginWithGoogle(idToken);
+      onAuthenticated();
     } catch (error) {
-      showToast(getApiErrorMessage(error, "Não foi possível abrir o login Google."));
+      if (isErrorWithCode(error) && error.code === statusCodes.SIGN_IN_CANCELLED) {
+        return;
+      }
+      showToast(
+        getApiErrorMessage(error, "Não foi possível entrar com o Google."),
+      );
+    } finally {
+      setLoading(false);
     }
   }
 
-  return <Pressable
-    accessibilityRole="button"
-    disabled={disabled || loading}
-    onPress={handlePress}
-    style={({ pressed }) => ({
-      alignItems: "center",
-      backgroundColor: "#FFFFFF",
-      borderColor: "#D1D5DB",
-      borderRadius: 10,
-      borderWidth: 1,
-      flexDirection: "row",
-      gap: 10,
-      justifyContent: "center",
-      marginBottom: 12,
-      opacity: pressed || disabled || loading ? 0.7 : 1,
-      padding: 14
-    })}
-  >
-    {loading ? <ActivityIndicator color="#4285F4" /> : <Text style={{
-      color: "#4285F4",
-      fontFamily: "Inter_700Bold",
-      fontSize: 16
-    }}>G</Text>}
-    <Text style={{
-      color: "#374151",
-      fontFamily: "Inter_600SemiBold",
-      fontSize: 14
-    }}>{loading ? "Conectando..." : "Continuar com Google"}</Text>
-  </Pressable>;
+  return (
+    <Pressable
+      accessibilityRole="button"
+      disabled={disabled || loading}
+      onPress={handlePress}
+      style={({ pressed }) => ({
+        alignItems: "center",
+        backgroundColor: "#FFFFFF",
+        borderColor: "#D1D5DB",
+        borderRadius: 10,
+        borderWidth: 1,
+        flexDirection: "row",
+        gap: 10,
+        justifyContent: "center",
+        marginBottom: 12,
+        opacity: pressed || disabled || loading ? 0.7 : 1,
+        padding: 14,
+      })}
+    >
+      {loading ? (
+        <ActivityIndicator color="#4285F4" />
+      ) : (
+        <Text
+          style={{
+            color: "#4285F4",
+            fontFamily: "Inter_700Bold",
+            fontSize: 16,
+          }}
+        >
+          G
+        </Text>
+      )}
+      <Text
+        style={{
+          color: "#374151",
+          fontFamily: "Inter_600SemiBold",
+          fontSize: 14,
+        }}
+      >
+        {loading ? "Conectando..." : "Continuar com Google"}
+      </Text>
+    </Pressable>
+  );
 }

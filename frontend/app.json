@@ -2,15 +2,14 @@
   "expo": {
     "name": "Easy Health",
     "slug": "easy-health",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "scheme": "easyhealth",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "android": {
+      "versionCode": 2,
       "package": "br.com.easyhealth.app",
       "adaptiveIcon": {
         "backgroundColor": "#146B63"
@@ -53,6 +52,7 @@
         }
       ],
       "expo-font",
+      "./plugins/withCleartextTraffic",
       "expo-secure-store",
       "expo-asset",
       "expo-web-browser",
