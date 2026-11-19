@@ -1,8 +1,1 @@
-.env
-**/.env
-.env.*
-**/.env.*
-docs/google-cloude-console/
-!.env.example
-!**/.env.example
 *.apk
