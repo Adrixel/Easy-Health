@@ -38,6 +38,30 @@ PREPARE stmt_cargo FROM @add_cargo;
 EXECUTE stmt_cargo;
 DEALLOCATE PREPARE stmt_cargo;
 
+-- Quem trabalha em qual clínica (dono, médico ou funcionário).
+CREATE TABLE IF NOT EXISTS establishment_staff (
+    user_id varchar(36) NOT NULL,
+    establishment_id varchar(191) NOT NULL,
+    cargo varchar(16) NOT NULL,
+    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, establishment_id),
+    KEY idx_establishment_staff_establishment (establishment_id),
+    CONSTRAINT fk_establishment_staff_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT chk_establishment_staff_cargo CHECK (cargo IN ('funcionario', 'medico', 'dono'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ 
+-- Preços de cada serviço por clínica (valor em centavos, para não ter erro de arredondamento).
+CREATE TABLE IF NOT EXISTS establishment_prices (
+    establishment_id varchar(191) NOT NULL,
+    servico varchar(120) NOT NULL,
+    valor_centavos int NOT NULL,
+    updated_by varchar(36) NULL,
+    updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (establishment_id, servico),
+    CONSTRAINT chk_establishment_prices_valor CHECK (valor_centavos >= 0),
+    CONSTRAINT fk_establishment_prices_user FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ 
 CREATE TABLE IF NOT EXISTS auth_tokens (
     token_hash varchar(64) PRIMARY KEY,
     user_id varchar(36) NOT NULL,
