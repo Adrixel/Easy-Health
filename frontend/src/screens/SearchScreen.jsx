@@ -13,6 +13,7 @@ import { colors } from "@/theme/colors";
 import { fonts, radius, spacing } from "@/theme/typography";
 import { PillTabs } from "@/components/PillTabs";
 import { ClinicCard } from "@/components/ClinicCard";
+import { EstablishmentMiniMap } from "@/components/EstablishmentMiniMap";
 import { useLocation } from "@/hooks/useLocation";
 import { useAppNavigation } from "@/navigation/useAppNavigation";
 import { establishmentsService } from "@/services/establishmentsService";
@@ -169,32 +170,13 @@ export function SearchScreen() {
         <PillTabs options={FILTERS} value={filtro} onChange={setFiltro} />
       </View>
 
-      {/* Ilustração de mapa — o mapa real (react-native-maps) fica para uma
-          fase seguinte; por ora, um preview estático evita adicionar uma
-          dependência nativa pesada só para o protótipo acadêmico. */}
-      <View
-        style={{
-          height: 130,
-          borderRadius: radius.lg,
-          backgroundColor: colors.primaryDark,
-          marginBottom: 20,
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-        }}
-      >
-        <Ionicons name="map-outline" size={28} color="rgba(255,255,255,0.5)" />
-        <Text
-          style={{
-            fontFamily: fonts.medium,
-            fontSize: 11,
-            color: "rgba(255,255,255,0.7)",
-            marginTop: 6,
-          }}
-        >
-          Mapa com unidades próximas
-        </Text>
-      </View>
+      <EstablishmentMiniMap
+        establishments={results}
+        userCoords={coords}
+        onSelect={(item) =>
+          navigation.navigate("EstablishmentDetail", { id: item.id })
+        }
+      />
 
       <Text
         style={{

@@ -4,6 +4,12 @@ Esta rodada teve dois objetivos: **corrigir bugs reais** do código anterior e
 **alinhar 100% o front ao design (Figma)** fornecido pelo usuário. Ambos foram
 validados de forma concreta, não só visualmente — ver seção "Como foi validado".
 
+## Funcionalidades adicionadas
+
+- O minimapa da busca mostra tiles do OpenStreetMap, a localização da pessoa
+  usuária e marcadores selecionáveis dos estabelecimentos; inclui controles de
+  zoom e mantém a atribuição cartográfica visível.
+
 ## Bugs corrigidos
 
 1. **`babel-plugin-module-resolver` ausente do `package.json`.** O
@@ -77,6 +83,3 @@ validados de forma concreta, não só visualmente — ver seção "Como foi vali
   receita em PDF e adicionar ao calendário do sistema são placeholders com
   `Alert` — cada um depende de uma API nativa (`expo-image-picker`,
   `expo-calendar`) ou rota de backend ainda não implementada.
-- Mapa real (react-native-maps) — a tela de busca usa um preview estático
-  para não adicionar uma dependência nativa pesada num protótipo acadêmico;
-  trocar por mapa real é direto quando fizer sentido.
