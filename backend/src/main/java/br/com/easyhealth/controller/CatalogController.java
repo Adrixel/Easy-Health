@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import br.com.easyhealth.service.EstablishmentPrices;
 
 @RestController
 public class CatalogController {
@@ -93,10 +94,10 @@ public class CatalogController {
     }
 
     @GetMapping("/api/estabelecimentos/{id}/precos")
-    public List<Map<String, Object>> prices(@PathVariable String id) {
-        findEstablishment(id);
-        return List.of(Map.of("servico", "Consulta", "valor", "R$ 280"));
-    }
+public List<Map<String, Object>> prices(@PathVariable String id) {
+    findEstablishment(id);
+    return EstablishmentPrices.list(jdbc, id);
+}
 
     @GetMapping("/api/estabelecimentos/{id}/horarios-disponiveis")
     public List<String> availableTimes(@PathVariable String id, @RequestParam LocalDate data) {
