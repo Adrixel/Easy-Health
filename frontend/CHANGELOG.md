@@ -8,7 +8,9 @@ validados de forma concreta, não só visualmente — ver seção "Como foi vali
 
 - O minimapa da busca mostra tiles do OpenStreetMap, a localização da pessoa
   usuária e marcadores selecionáveis dos estabelecimentos; inclui controles de
-  zoom e mantém a atribuição cartográfica visível.
+  zoom e mantém a atribuição cartográfica visível. Os tiles usam o servidor
+  OpenStreetMap.de com identificação do app para evitar bloqueios do servidor
+  padrão de tiles.
 
 ## Bugs corrigidos
 

@@ -15,6 +15,9 @@ const TILE_SIZE = 256;
 const MIN_ZOOM = 2;
 const MAX_ZOOM = 19;
 const EMPTY_SET = new Set();
+const TILE_REQUEST_HEADERS = {
+  "User-Agent": "EasyHealth/1.0 (+https://github.com/Joao-Henrique5557/Easy-Health)",
+};
 
 export function EstablishmentMiniMap({
   establishments,
@@ -122,7 +125,7 @@ export function EstablishmentMiniMap({
       {tiles.map((tile) => (
         <Image
           key={tile.key}
-          source={{ uri: tile.url }}
+          source={{ uri: tile.url, headers: TILE_REQUEST_HEADERS }}
           resizeMode="stretch"
           onError={() => markTileFailed(tile.key)}
           style={{
@@ -302,7 +305,7 @@ export function EstablishmentMiniMap({
       )}
 
       <Text
-        accessibilityLabel="Dados do mapa: OpenStreetMap"
+        accessibilityLabel="Dados do mapa: OpenStreetMap.de"
         style={{
           position: "absolute",
           left: 5,

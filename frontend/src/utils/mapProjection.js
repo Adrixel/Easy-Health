@@ -124,7 +124,7 @@ function getVisibleTiles(center, zoom, width, height) {
     for (let tileY = firstTileY; tileY <= lastTileY; tileY += 1) {
       tiles.push({
         key: `${zoom}/${tileX}/${tileY}`,
-        url: `https://tile.openstreetmap.org/${zoom}/${wrappedX}/${tileY}.png`,
+        url: `https://tile.openstreetmap.de/${zoom}/${wrappedX}/${tileY}.png`,
         left: tileX * TILE_SIZE - left,
         top: tileY * TILE_SIZE - top,
       });

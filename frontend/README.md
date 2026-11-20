@@ -9,7 +9,7 @@ Frontend mobile do Easy Health, incluindo o **Assistente de IA** (navegação gu
 - **axios** com interceptors de auth (access/refresh token)
 - **expo-secure-store** — tokens no Android Keystore / iOS Keychain (nunca em `AsyncStorage` puro)
 - **expo-location** — GPS para busca de atendimento e Modo Emergência
-- **OpenStreetMap** — mapa de estabelecimentos com pontos e controles de zoom, sem chave de API
+- **OpenStreetMap.de** — mapa de estabelecimentos com pontos e controles de zoom, sem chave de API
 - **expo-notifications** — push notifications (canal Android)
 - **expo-calendar**, **expo-image-picker**, **expo-print** e **expo-sharing** — calendário,
   foto do perfil e resumo de consulta em PDF

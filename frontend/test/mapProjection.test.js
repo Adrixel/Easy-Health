@@ -53,7 +53,7 @@ test("creates visible OpenStreetMap tiles and wraps tile columns at the date lin
   assert.ok(tiles.length > 0);
   assert.ok(
     tiles.some((tile) =>
-      /^https:\/\/tile\.openstreetmap\.org\/3\/[0-7]\/\d+\.png$/.test(tile.url),
+      /^https:\/\/tile\.openstreetmap\.de\/3\/[0-7]\/\d+\.png$/.test(tile.url),
     ),
   );
   assert.ok(tiles.every((tile) => tile.top < 160 && tile.top + 256 > 0));
