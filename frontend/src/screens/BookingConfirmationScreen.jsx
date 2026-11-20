@@ -9,18 +9,30 @@ import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
 import { useAppNavigation } from "@/navigation/useAppNavigation";
 import { bookingService } from "@/services/bookingService";
 import { calendarService } from "@/services/calendarService";
+import { notificationService } from "@/services/notificationService";
 import { formatDateLong } from "@/utils/date";
 export function BookingConfirmationScreen() {
   const navigation = useAppNavigation();
   const route = useRoute();
   const [booking, setBooking] = useState(null);
   const [busy, setBusy] = useState(null);
+  const [reminderScheduled, setReminderScheduled] = useState(false);
   useEffect(() => {
     let active = true;
     bookingService
       .getById(route.params.bookingId)
       .then((data) => {
-        if (active) setBooking(data);
+        if (active) {
+          setBooking(data);
+          notificationService
+            .hasAppointmentReminder(data.id)
+            .then((scheduled) => {
+              if (active) setReminderScheduled(scheduled);
+            })
+            .catch((error) => {
+              console.error("Não foi possível verificar o lembrete.", error);
+            });
+        }
       })
       .catch((error) => {
         Alert.alert(
@@ -48,6 +60,43 @@ export function BookingConfirmationScreen() {
       Alert.alert(
         "Não foi possível adicionar ao calendário",
         error.message || "Tente novamente.",
+      );
+    } finally {
+      setBusy(null);
+    }
+  }
+  async function handleScheduleReminder() {
+    if (!booking || busy || reminderScheduled) return;
+    setBusy("notification");
+    try {
+      const result =
+        await notificationService.scheduleAppointmentReminder(booking);
+      if (result.status === "permission-denied") {
+        Alert.alert(
+          "Permissão necessária",
+          "Permita notificações nas configurações do celular para receber o lembrete.",
+        );
+        return;
+      }
+      if (result.status === "too-soon") {
+        Alert.alert(
+          "Consulta próxima",
+          "Não há tempo suficiente para agendar um lembrete antes desta consulta.",
+        );
+        return;
+      }
+      if (result.status === "unavailable") return;
+
+      setReminderScheduled(true);
+      Alert.alert(
+        "Lembrete ativado",
+        `Você receberá uma notificação em ${result.reminderDate.toLocaleString("pt-BR")}.`,
+      );
+    } catch (error) {
+      console.error("Não foi possível agendar o lembrete da consulta.", error);
+      Alert.alert(
+        "Não foi possível ativar o lembrete",
+        error.message || "Verifique as permissões e tente novamente.",
       );
     } finally {
       setBusy(null);
@@ -288,6 +337,19 @@ export function BookingConfirmationScreen() {
           loading={busy === "calendar"}
           onPress={handleAddToCalendar}
         />
+        {Platform.OS !== "web" && (
+          <SecondaryButton
+            label={
+              reminderScheduled
+                ? "Lembrete ativado"
+                : "Ativar lembrete da consulta"
+            }
+            icon={reminderScheduled ? "notifications" : "notifications-outline"}
+            loading={busy === "notification"}
+            onPress={handleScheduleReminder}
+            disabled={reminderScheduled || busy !== null}
+          />
+        )}
       </View>
     </View>
   );

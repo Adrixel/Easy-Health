@@ -11,6 +11,9 @@ validados de forma concreta, não só visualmente — ver seção "Como foi vali
   zoom e mantém a atribuição cartográfica visível. Os tiles usam o servidor
   OpenStreetMap.de com identificação do app para evitar bloqueios do servidor
   padrão de tiles.
+- A confirmação do agendamento permite ativar um lembrete local nativo,
+  programado para 24 horas antes ou, quando o agendamento é mais próximo, 1
+  hora antes da consulta.
 
 ## Bugs corrigidos
 

@@ -15,7 +15,6 @@ import { colors } from "@/theme/colors";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { authService } from "@/services/authService";
 import { tokenStorage } from "@/services/tokenStorage";
-import { notificationService } from "@/services/notificationService";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/Toast";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -59,11 +58,6 @@ export default function App() {
       unsubscribe();
     };
   }, []);
-  useEffect(() => {
-    if (isAuthenticated) {
-      notificationService.registerForPushNotifications().catch(() => {});
-    }
-  }, [isAuthenticated]);
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded && !checkingSession) {
       await SplashScreen.hideAsync();
