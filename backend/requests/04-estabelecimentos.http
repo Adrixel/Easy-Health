@@ -16,16 +16,15 @@ GET {{baseUrl}}/api/estabelecimentos/busca?latitude=-23.5505&longitude=-46.6333&
 GET {{baseUrl}}/api/estabelecimentos/busca?latitude=-23.5505&longitude=-46.6333&query=São Lucas
 
 ### Detalhe de um estabelecimento (Tela "Detalhe do Estabelecimento")
-GET {{baseUrl}}/api/estabelecimentos/hosp-sao-lucas
+GET {{baseUrl}}/api/estabelecimentos/parceiro-hospital-exemplo
 
 ### Especialidades de um estabelecimento
-GET {{baseUrl}}/api/estabelecimentos/hosp-sao-lucas/especialidades
+GET {{baseUrl}}/api/estabelecimentos/parceiro-hospital-exemplo/especialidades
 
 ### Preços de um estabelecimento
-GET {{baseUrl}}/api/estabelecimentos/hosp-sao-lucas/precos
-
+GET {{baseUrl}}/api/estabelecimentos/parceiro-hospital-exemplo/precos
 ### Horários disponíveis em uma data (Tela "Agendar Consulta")
-GET {{baseUrl}}/api/estabelecimentos/hosp-sao-lucas/horarios-disponiveis?data={{bookingDate}}
+GET {{baseUrl}}/api/estabelecimentos/parceiro-hospital-exemplo/horarios-disponiveis?data={{bookingDate}}
 
 ### Lista geral de especialidades (para filtros)
 GET {{baseUrl}}/api/especialidades

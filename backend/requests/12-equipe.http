@@ -29,3 +29,6 @@ GET {{baseUrl}}/api/equipe/painel?accessToken={{login.response.body.$.accessToke
 # 401: sem login ou token inválido ("Autenticação necessária.")
 # 403: cargo sem permissão ("Você não tem permissão para fazer isso.")
 GET {{baseUrl}}/api/equipe/administracao?accessToken={{login.response.body.$.accessToken}}
+
+### Consultar clínicas do usuário logado
+GET {{baseUrl}}/api/equipe/minhas-clinicas?accessToken={{login.response.body.$.accessToken}}
