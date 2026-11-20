@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
+import br.com.easyhealth.model.Cargo;
 import br.com.easyhealth.model.User;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -18,7 +19,7 @@ public class UserRepository {
             id, nome, email, senha_hash, telefone, data_nascimento,
             avatar_url, tipo_sanguineo, alergias, medicamentos_em_uso,
             plano_de_saude, email_verificado, contato_emergencia_nome,
-            contato_emergencia_telefone, contato_emergencia_parentesco
+            contato_emergencia_telefone, contato_emergencia_parentesco, cargo
             """;
 
     private static final @NonNull RowMapper<User> USER_MAPPER = UserRepository::mapUser;
@@ -38,6 +39,7 @@ public class UserRepository {
                 USER_MAPPER, email).stream().findFirst();
     }
 
+    // O cadastro não recebe cargo: a coluna "cargo" usa o padrão 'paciente' do banco.
     public User create(String nome, String email, String passwordHash, String telefone, String dataNascimento) {
         String id = UUID.randomUUID().toString();
         jdbc.update("""
@@ -96,7 +98,8 @@ public class UserRepository {
                 row.getBoolean("email_verificado"),
                 row.getString("contato_emergencia_nome"),
                 row.getString("contato_emergencia_telefone"),
-                row.getString("contato_emergencia_parentesco"));
+                row.getString("contato_emergencia_parentesco"),
+                Cargo.fromValor(row.getString("cargo")));
     }
 
     private static String emptyToNull(String value) {

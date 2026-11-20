@@ -18,7 +18,38 @@ public record User(
         boolean emailVerificado,
         String contatoEmergenciaNome,
         String contatoEmergenciaTelefone,
-        String contatoEmergenciaParentesco) {
+        String contatoEmergenciaParentesco,
+        Cargo cargo) {
+
+    // Sem cargo informado, vale o cargo com menos poder.
+    public User {
+        if (cargo == null) {
+            cargo = Cargo.PACIENTE;
+        }
+    }
+
+    // Construtor antigo (sem cargo), mantido para não quebrar quem já chama "new User(...)" com 15 argumentos.
+    public User(
+            String id,
+            String nome,
+            String email,
+            String senhaHash,
+            String telefone,
+            String dataNascimento,
+            String avatarUrl,
+            String tipoSanguineo,
+            String alergias,
+            String medicamentosEmUso,
+            String planoDeSaude,
+            boolean emailVerificado,
+            String contatoEmergenciaNome,
+            String contatoEmergenciaTelefone,
+            String contatoEmergenciaParentesco) {
+        this(id, nome, email, senhaHash, telefone, dataNascimento, avatarUrl, tipoSanguineo,
+                alergias, medicamentosEmUso, planoDeSaude, emailVerificado,
+                contatoEmergenciaNome, contatoEmergenciaTelefone, contatoEmergenciaParentesco,
+                Cargo.PACIENTE);
+    }
 
     public Map<String, Object> publicView() {
         Map<String, Object> view = new LinkedHashMap<>();
@@ -36,6 +67,7 @@ public record User(
         view.put("contatoEmergenciaNome", contatoEmergenciaNome);
         view.put("contatoEmergenciaTelefone", contatoEmergenciaTelefone);
         view.put("contatoEmergenciaParentesco", contatoEmergenciaParentesco);
+        view.put("cargo", cargo.valor());
         return view;
     }
 }
