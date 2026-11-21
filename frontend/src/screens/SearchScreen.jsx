@@ -18,6 +18,7 @@ import { useLocation } from "@/hooks/useLocation";
 import { useAppNavigation } from "@/navigation/useAppNavigation";
 import { establishmentsService } from "@/services/establishmentsService";
 import { emergencyService } from "@/services/emergencyService";
+import { AdBanner } from "@/components/AdBanner";
 const FILTERS = [
   {
     value: "todos",
@@ -114,16 +115,14 @@ export function SearchScreen() {
     }
   }
   return (
-    <ScrollView
-      style={{
-        flex: 1,
-        backgroundColor: colors.bg,
-      }}
-      contentContainerStyle={{
-        padding: spacing.lg,
-        paddingTop: spacing.xl,
-      }}
-    >
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          padding: spacing.lg,
+          paddingTop: spacing.xl,
+        }}
+      >
       <Text
         style={{
           fontFamily: fonts.bold,
@@ -232,6 +231,8 @@ export function SearchScreen() {
           ))}
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+      <AdBanner />
+    </View>
   );
 }

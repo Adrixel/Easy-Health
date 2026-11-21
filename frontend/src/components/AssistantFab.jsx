@@ -2,7 +2,7 @@ import React from "react";
 import { Platform, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "@/theme/colors";
-export function AssistantFab({ onPress }) {
+export function AssistantFab({ onPress, bottom = 24 }) {
   return (
     <Pressable
       onPress={onPress}
@@ -10,7 +10,7 @@ export function AssistantFab({ onPress }) {
       style={({ pressed }) => ({
         position: "absolute",
         right: 18,
-        bottom: 24,
+        bottom,
         width: 54,
         height: 54,
         borderRadius: 27,

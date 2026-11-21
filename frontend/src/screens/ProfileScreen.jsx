@@ -9,6 +9,7 @@ import { Avatar } from "@/components/Avatar";
 import { useAppNavigation } from "@/navigation/useAppNavigation";
 import { profileService } from "@/services/profileService";
 import { authService } from "@/services/authService";
+import { AdBanner } from "@/components/AdBanner";
 const MENU_ITEMS = [
   {
     icon: "person-outline",
@@ -56,16 +57,14 @@ export function ProfileScreen() {
     ]);
   }
   return (
-    <ScrollView
-      style={{
-        flex: 1,
-        backgroundColor: colors.bg,
-      }}
-      contentContainerStyle={{
-        padding: spacing.lg,
-        paddingTop: spacing.xl,
-      }}
-    >
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          padding: spacing.lg,
+          paddingTop: spacing.xl,
+        }}
+      >
       <Text
         style={{
           fontFamily: fonts.bold,
@@ -167,6 +166,8 @@ export function ProfileScreen() {
           Sair da conta
         </Text>
       </Pressable>
-    </ScrollView>
+      </ScrollView>
+      <AdBanner />
+    </View>
   );
 }
