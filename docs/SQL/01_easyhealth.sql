@@ -94,16 +94,23 @@ CREATE TABLE IF NOT EXISTS password_reset_codes (
 CREATE TABLE IF NOT EXISTS medical_history_records (
     id varchar(36) PRIMARY KEY,
     user_id varchar(36) NOT NULL,
+    medico_id varchar(36) NULL,
+    establishment_id varchar(191) NULL,
     tipo varchar(24) NOT NULL,
     titulo varchar(180) NOT NULL,
     data date NOT NULL,
     descricao text,
+    resultado text,
+    laudo_url varchar(1000),
     profissional varchar(180),
     local varchar(255),
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     KEY idx_medical_history_user_date (user_id, data),
+    KEY idx_medical_history_medico_date (medico_id, data),
+    KEY idx_medical_history_establishment (establishment_id),
     CONSTRAINT fk_medical_history_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_medical_history_medico FOREIGN KEY (medico_id) REFERENCES users(id) ON DELETE SET NULL,
     CONSTRAINT chk_medical_history_type CHECK (tipo IN ('exame', 'vacina', 'medicamento', 'documento'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -111,13 +118,16 @@ CREATE TABLE IF NOT EXISTS appointments (
     id varchar(36) PRIMARY KEY,
     user_id varchar(36) NOT NULL,
     establishment_id varchar(191) NOT NULL,
+    medico_id varchar(36) NULL,
     especialidade varchar(255) NOT NULL,
     data date NOT NULL,
     horario time NOT NULL,
     status varchar(32) NOT NULL DEFAULT 'agendado',
     created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_appointments_user_date (user_id, data, horario),
-    CONSTRAINT fk_appointments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    KEY idx_appointments_medico_data (medico_id, data, horario),
+    CONSTRAINT fk_appointments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_appointments_medico FOREIGN KEY (medico_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Linhas locais usadas para serializar reservas por estabelecimento sem
@@ -175,3 +185,138 @@ SET @drop_legacy_appointments_fk = (
 PREPARE drop_legacy_appointments_fk FROM @drop_legacy_appointments_fk;
 EXECUTE drop_legacy_appointments_fk;
 DEALLOCATE PREPARE drop_legacy_appointments_fk;
+-- Adiciona medico_id em bancos criados antes da associação de médicos.
+SET @add_appointments_medico_id = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE appointments ADD COLUMN medico_id varchar(36) NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'appointments'
+      AND COLUMN_NAME = 'medico_id'
+);
+PREPARE add_appointments_medico_id FROM @add_appointments_medico_id;
+EXECUTE add_appointments_medico_id;
+DEALLOCATE PREPARE add_appointments_medico_id;
+
+-- Cria o índice de busca por médico, data e horário.
+SET @add_appointments_medico_index = (
+    SELECT IF(COUNT(*) = 0,
+        'CREATE INDEX idx_appointments_medico_data ON appointments (medico_id, data, horario)',
+        'SELECT 1')
+    FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'appointments'
+      AND INDEX_NAME = 'idx_appointments_medico_data'
+);
+PREPARE add_appointments_medico_index FROM @add_appointments_medico_index;
+EXECUTE add_appointments_medico_index;
+DEALLOCATE PREPARE add_appointments_medico_index;
+
+-- Cria a relação entre o agendamento e o médico.
+SET @add_appointments_medico_fk = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE appointments ADD CONSTRAINT fk_appointments_medico FOREIGN KEY (medico_id) REFERENCES users(id) ON DELETE SET NULL',
+        'SELECT 1')
+    FROM information_schema.REFERENTIAL_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'appointments'
+      AND CONSTRAINT_NAME = 'fk_appointments_medico'
+);
+PREPARE add_appointments_medico_fk FROM @add_appointments_medico_fk;
+EXECUTE add_appointments_medico_fk;
+DEALLOCATE PREPARE add_appointments_medico_fk;
+
+-- Adiciona os campos de associação e resultado dos registros médicos.
+SET @add_medical_history_medico_id = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE medical_history_records ADD COLUMN medico_id varchar(36) NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'medical_history_records'
+      AND COLUMN_NAME = 'medico_id'
+);
+PREPARE add_medical_history_medico_id FROM @add_medical_history_medico_id;
+EXECUTE add_medical_history_medico_id;
+DEALLOCATE PREPARE add_medical_history_medico_id;
+
+SET @add_medical_history_establishment_id = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE medical_history_records ADD COLUMN establishment_id varchar(191) NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'medical_history_records'
+      AND COLUMN_NAME = 'establishment_id'
+);
+PREPARE add_medical_history_establishment_id FROM @add_medical_history_establishment_id;
+EXECUTE add_medical_history_establishment_id;
+DEALLOCATE PREPARE add_medical_history_establishment_id;
+
+SET @add_medical_history_resultado = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE medical_history_records ADD COLUMN resultado text NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'medical_history_records'
+      AND COLUMN_NAME = 'resultado'
+);
+PREPARE add_medical_history_resultado FROM @add_medical_history_resultado;
+EXECUTE add_medical_history_resultado;
+DEALLOCATE PREPARE add_medical_history_resultado;
+
+SET @add_medical_history_laudo_url = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE medical_history_records ADD COLUMN laudo_url varchar(1000) NULL',
+        'SELECT 1')
+    FROM information_schema.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'medical_history_records'
+      AND COLUMN_NAME = 'laudo_url'
+);
+PREPARE add_medical_history_laudo_url FROM @add_medical_history_laudo_url;
+EXECUTE add_medical_history_laudo_url;
+DEALLOCATE PREPARE add_medical_history_laudo_url;
+
+-- Cria os índices para consultas por médico e estabelecimento.
+SET @add_medical_history_medico_index = (
+    SELECT IF(COUNT(*) = 0,
+        'CREATE INDEX idx_medical_history_medico_date ON medical_history_records (medico_id, data)',
+        'SELECT 1')
+    FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'medical_history_records'
+      AND INDEX_NAME = 'idx_medical_history_medico_date'
+);
+PREPARE add_medical_history_medico_index FROM @add_medical_history_medico_index;
+EXECUTE add_medical_history_medico_index;
+DEALLOCATE PREPARE add_medical_history_medico_index;
+
+SET @add_medical_history_establishment_index = (
+    SELECT IF(COUNT(*) = 0,
+        'CREATE INDEX idx_medical_history_establishment ON medical_history_records (establishment_id)',
+        'SELECT 1')
+    FROM information_schema.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'medical_history_records'
+      AND INDEX_NAME = 'idx_medical_history_establishment'
+);
+PREPARE add_medical_history_establishment_index FROM @add_medical_history_establishment_index;
+EXECUTE add_medical_history_establishment_index;
+DEALLOCATE PREPARE add_medical_history_establishment_index;
+
+-- Relaciona o registro médico ao usuário cadastrado como médico.
+SET @add_medical_history_medico_fk = (
+    SELECT IF(COUNT(*) = 0,
+        'ALTER TABLE medical_history_records ADD CONSTRAINT fk_medical_history_medico FOREIGN KEY (medico_id) REFERENCES users(id) ON DELETE SET NULL',
+        'SELECT 1')
+    FROM information_schema.REFERENTIAL_CONSTRAINTS
+    WHERE CONSTRAINT_SCHEMA = DATABASE()
+      AND TABLE_NAME = 'medical_history_records'
+      AND CONSTRAINT_NAME = 'fk_medical_history_medico'
+);
+PREPARE add_medical_history_medico_fk FROM @add_medical_history_medico_fk;
+EXECUTE add_medical_history_medico_fk;
+DEALLOCATE PREPARE add_medical_history_medico_fk;

@@ -39,52 +39,99 @@ public class PersonalDataController {
     }
 
     @GetMapping("/api/agendamentos")
-    public List<Map<String, Object>> bookings(HttpServletRequest request) {
-        String userId = auth.requireUserId(request);
-        LocalDate today = LocalDate.now(BRAZIL_ZONE);
-        LocalTime now = LocalTime.now(BRAZIL_ZONE);
-        return jdbc.query("""
-                SELECT a.id, a.user_id, a.establishment_id, i.nome AS establishment_name,
-                    a.especialidade, a.data, a.horario, a.status
-                FROM appointments a
-                JOIN easyhealth_institutions.instituicoes_saude i ON i.id = a.establishment_id
-                WHERE a.user_id = ? AND a.status IN ('agendado', 'confirmado')
-                    AND (a.data > ? OR (a.data = ? AND a.horario >= ?))
-                ORDER BY a.data, a.horario
-                """, (row, index) -> bookingView(
-                        row.getString("id"), row.getString("user_id"), row.getString("establishment_id"),
-                        row.getString("establishment_name"), row.getString("especialidade"),
-                        row.getDate("data"), row.getTime("horario"), row.getString("status")),
-                userId, Date.valueOf(today), Date.valueOf(today), Time.valueOf(now.withNano(0)));
+public List<Map<String, Object>> bookings(HttpServletRequest request) {
+    String userId = auth.requireUserId(request);
+    LocalDate today = LocalDate.now(BRAZIL_ZONE);
+    LocalTime now = LocalTime.now(BRAZIL_ZONE);
+
+    return jdbc.query("""
+            SELECT a.id, a.user_id, a.establishment_id,
+                i.nome AS establishment_name,
+                a.medico_id,
+                m.nome AS medico_nome,
+                a.especialidade, a.data, a.horario, a.status
+            FROM appointments a
+            JOIN easyhealth_institutions.instituicoes_saude i
+                ON i.id = a.establishment_id
+            LEFT JOIN users m ON m.id = a.medico_id
+            WHERE a.user_id = ?
+                AND a.status IN ('agendado', 'confirmado')
+                AND (a.data > ? OR (a.data = ? AND a.horario >= ?))
+            ORDER BY a.data, a.horario
+            """, (row, index) -> bookingView(
+                    row.getString("id"),
+                    row.getString("user_id"),
+                    row.getString("establishment_id"),
+                    row.getString("establishment_name"),
+                    row.getString("medico_id"),
+                    row.getString("medico_nome"),
+                    row.getString("especialidade"),
+                    row.getDate("data"),
+                    row.getTime("horario"),
+                    row.getString("status")),
+            userId,
+            Date.valueOf(today),
+            Date.valueOf(today),
+            Time.valueOf(now.withNano(0)));
+}
+@PostMapping("/api/agendamentos")
+@Transactional
+public Map<String, Object> createBooking(HttpServletRequest request,
+        @RequestBody Map<String, Object> body) {
+    String userId = auth.requireUserId(request);
+    String establishmentId = required(body, "establishmentId");
+    String specialty = required(body, "especialidade");
+    String medicoId = required(body, "medicoId");
+
+    Integer medicoValido = jdbc.queryForObject("""
+            SELECT COUNT(*)
+            FROM users u
+            JOIN establishment_staff es ON es.user_id = u.id
+            WHERE u.id = ?
+              AND u.cargo = 'medico'
+              AND es.establishment_id = ?
+              AND es.cargo = 'medico'
+            """, Integer.class, medicoId, establishmentId);
+
+    if (medicoValido == null || medicoValido == 0) {
+        throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Médico não encontrado ou não vinculado a este estabelecimento."
+        );
     }
 
-    @PostMapping("/api/agendamentos")
-    @Transactional
-    public Map<String, Object> createBooking(HttpServletRequest request,
-            @RequestBody Map<String, Object> body) {
-        String userId = auth.requireUserId(request);
-        String establishmentId = required(body, "establishmentId");
-        String specialty = required(body, "especialidade");
-        LocalDate date = parseDate(required(body, "data"));
-        LocalTime time = parseTime(required(body, "horario"));
-        String slot = requireBookableSlot(date, time);
-        lockEstablishment(establishmentId);
-        if (!AppointmentAvailability.forDate(jdbc, establishmentId, date, true).contains(slot)) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Este horário não está mais disponível. Escolha outro horário.");
-        }
-        String id = UUID.randomUUID().toString();
-        try {
-            jdbc.update("""
-                    INSERT INTO appointments (id, user_id, establishment_id, especialidade, data, horario)
-                    VALUES (?, ?, ?, ?, ?, ?)
-                    """, id, userId, establishmentId, specialty, Date.valueOf(date), Time.valueOf(time));
-        } catch (org.springframework.dao.DataIntegrityViolationException exception) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Estabelecimento não encontrado ou agendamento inválido.");
-        }
-        return findBooking(id, userId);
+    LocalDate date = parseDate(required(body, "data"));
+    LocalTime time = parseTime(required(body, "horario"));
+    String slot = requireBookableSlot(date, time);
+
+    lockEstablishment(establishmentId);
+
+    if (!AppointmentAvailability.forDate(jdbc, establishmentId, date, true).contains(slot)) {
+        throw new ResponseStatusException(HttpStatus.CONFLICT,
+                "Este horário não está mais disponível. Escolha outro horário.");
     }
+
+    String id = UUID.randomUUID().toString();
+
+    try {
+        jdbc.update("""
+                INSERT INTO appointments (
+                    id, user_id, establishment_id, medico_id,
+                    especialidade, data, horario
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                id, userId, establishmentId, medicoId, specialty,
+                Date.valueOf(date), Time.valueOf(time));
+
+    } catch (org.springframework.dao.DataIntegrityViolationException exception) {
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "Estabelecimento ou médico inválido, ou agendamento não permitido.");
+    }
+
+    return findBooking(id, userId);
+}
+
 
     @GetMapping("/api/agendamentos/{id}")
     public Map<String, Object> booking(HttpServletRequest request, @PathVariable String id) {
@@ -242,20 +289,35 @@ public class PersonalDataController {
     }
 
     @GetMapping("/api/historico/consultas")
-    public List<Map<String, Object>> consultationHistory(HttpServletRequest request) {
-        String userId = auth.requireUserId(request);
-        return jdbc.query("""
-                SELECT a.id, a.user_id, a.establishment_id, i.nome AS establishment_name,
-                    a.especialidade, a.data, a.horario, a.status
-                FROM appointments a
-                JOIN easyhealth_institutions.instituicoes_saude i ON i.id = a.establishment_id
-                WHERE a.user_id = ? AND a.status IN ('concluido', 'cancelado')
-                ORDER BY a.data DESC, a.horario DESC
-                """, (row, index) -> bookingView(
-                        row.getString("id"), row.getString("user_id"), row.getString("establishment_id"),
-                        row.getString("establishment_name"), row.getString("especialidade"),
-                        row.getDate("data"), row.getTime("horario"), row.getString("status")), userId);
-    }
+public List<Map<String, Object>> consultationHistory(HttpServletRequest request) {
+    String userId = auth.requireUserId(request);
+
+    return jdbc.query("""
+            SELECT a.id, a.user_id, a.establishment_id,
+                i.nome AS establishment_name,
+                a.medico_id,
+                m.nome AS medico_nome,
+                a.especialidade, a.data, a.horario, a.status
+            FROM appointments a
+            JOIN easyhealth_institutions.instituicoes_saude i
+                ON i.id = a.establishment_id
+            LEFT JOIN users m ON m.id = a.medico_id
+            WHERE a.user_id = ?
+                AND a.status IN ('concluido', 'cancelado')
+            ORDER BY a.data DESC, a.horario DESC
+            """, (row, index) -> bookingView(
+                    row.getString("id"),
+                    row.getString("user_id"),
+                    row.getString("establishment_id"),
+                    row.getString("establishment_name"),
+                    row.getString("medico_id"),
+                    row.getString("medico_nome"),
+                    row.getString("especialidade"),
+                    row.getDate("data"),
+                    row.getTime("horario"),
+                    row.getString("status")),
+            userId);
+}
 
     @GetMapping("/api/historico/consultas/{id}")
     public Map<String, Object> consultation(HttpServletRequest request, @PathVariable String id) {
@@ -266,15 +328,53 @@ public class PersonalDataController {
         return item;
     }
 
-    @GetMapping({
+        @GetMapping({
         "/api/historico/exames",
         "/api/historico/vacinas",
         "/api/historico/medicamentos",
         "/api/historico/documentos"
     })
-    public List<Map<String, Object>> emptyHealthHistory(HttpServletRequest request) {
-        auth.requireUserId(request);
-        return List.of();
+    public List<Map<String, Object>> healthHistory(HttpServletRequest request) {
+        String userId = auth.requireUserId(request);
+        String path = request.getRequestURI();
+
+        String tipo = switch (path) {
+            case "/api/historico/exames" -> "exame";
+            case "/api/historico/vacinas" -> "vacina";
+            case "/api/historico/medicamentos" -> "medicamento";
+            case "/api/historico/documentos" -> "documento";
+            default -> throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND, "Histórico não encontrado.");
+        };
+
+                return jdbc.query("""
+                SELECT r.id, r.tipo, r.titulo, r.data, r.descricao,
+                       r.profissional, r.local, r.resultado, r.laudo_url,
+                       r.medico_id, m.nome AS medico_nome,
+                       r.establishment_id, e.nome AS estabelecimento
+                FROM medical_history_records r
+                LEFT JOIN users m ON m.id = r.medico_id
+                LEFT JOIN easyhealth_institutions.instituicoes_saude e
+                    ON e.id = r.establishment_id
+                WHERE r.user_id = ? AND r.tipo = ?
+                ORDER BY r.data DESC, r.created_at DESC
+                """, (row, index) -> {
+            Map<String, Object> record = new LinkedHashMap<>();
+            record.put("id", row.getString("id"));
+            record.put("tipo", row.getString("tipo"));
+            record.put("titulo", row.getString("titulo"));
+            record.put("data", row.getDate("data").toLocalDate().toString());
+            record.put("descricao", row.getString("descricao"));
+            record.put("profissional", row.getString("profissional"));
+            record.put("local", row.getString("local"));
+            record.put("resultado", row.getString("resultado"));
+            record.put("laudoUrl", row.getString("laudo_url"));
+            record.put("medicoId", row.getString("medico_id"));
+            record.put("medico", row.getString("medico_nome"));
+            record.put("establishmentId", row.getString("establishment_id"));
+            record.put("estabelecimento", row.getString("estabelecimento"));
+            return record;
+        }, userId, tipo);
     }
 
     private static boolean isActive(Object status) {
@@ -313,38 +413,59 @@ public class PersonalDataController {
     }
 
     private Map<String, Object> findBooking(String id, String userId) {
-        return jdbc.query("""
-                SELECT a.id, a.user_id, a.establishment_id, i.nome AS establishment_name,
-                    a.especialidade, a.data, a.horario, a.status
-                FROM appointments a
-                JOIN easyhealth_institutions.instituicoes_saude i ON i.id = a.establishment_id
-                WHERE a.id = ? AND a.user_id = ?
-                """, (row, index) -> bookingView(
-                        row.getString("id"), row.getString("user_id"), row.getString("establishment_id"),
-                        row.getString("establishment_name"), row.getString("especialidade"),
-                        row.getDate("data"), row.getTime("horario"), row.getString("status")),
-                id, userId).stream().findFirst().orElseThrow(() ->
-                new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado."));
-    }
+    return jdbc.query("""
+            SELECT a.id, a.user_id, a.establishment_id,
+                i.nome AS establishment_name,
+                a.medico_id,
+                m.nome AS medico_nome,
+                a.especialidade, a.data, a.horario, a.status
+            FROM appointments a
+            JOIN easyhealth_institutions.instituicoes_saude i
+                ON i.id = a.establishment_id
+            LEFT JOIN users m ON m.id = a.medico_id
+            WHERE a.id = ? AND a.user_id = ?
+            """, (row, index) -> bookingView(
+                    row.getString("id"),
+                    row.getString("user_id"),
+                    row.getString("establishment_id"),
+                    row.getString("establishment_name"),
+                    row.getString("medico_id"),
+                    row.getString("medico_nome"),
+                    row.getString("especialidade"),
+                    row.getDate("data"),
+                    row.getTime("horario"),
+                    row.getString("status")),
+            id, userId).stream().findFirst().orElseThrow(() ->
+            new ResponseStatusException(HttpStatus.NOT_FOUND, "Agendamento não encontrado."));
+}
 
-    private static Map<String, Object> bookingView(String id, String userId, String establishmentId,
-            String establishmentName, String specialty, Date date, Time time, String status) {
-        Map<String, Object> booking = new LinkedHashMap<>();
-        booking.put("id", id);
-        booking.put("userId", userId);
-        booking.put("establishmentId", establishmentId);
-        booking.put("establishmentNome", establishmentName);
-        booking.put("especialidade", specialty);
-        booking.put("local", establishmentName);
-        booking.put("data", date.toString());
-        booking.put("horario", time.toLocalTime().toString().substring(0, 5));
-        booking.put("status", status);
-        booking.put("medico", "Dr. Carlos Mendes");
-        booking.put("medicoCrm", "CRM 12345");
-        booking.put("valor", "R$ 280");
-        return booking;
-    }
+    private static Map<String, Object> bookingView(
+        String id,
+        String userId,
+        String establishmentId,
+        String establishmentName,
+        String medicoId,
+        String medicoNome,
+        String specialty,
+        Date date,
+        Time time,
+        String status) {
 
+    Map<String, Object> booking = new LinkedHashMap<>();
+    booking.put("id", id);
+    booking.put("userId", userId);
+    booking.put("establishmentId", establishmentId);
+    booking.put("establishmentNome", establishmentName);
+    booking.put("especialidade", specialty);
+    booking.put("local", establishmentName);
+    booking.put("data", date.toString());
+    booking.put("horario", time.toLocalTime().toString().substring(0, 5));
+    booking.put("status", status);
+    booking.put("medicoId", medicoId);
+    booking.put("medico", medicoNome);
+
+    return booking;
+}
     private static String required(Map<String, Object> body, String name) {
         Object value = body.get(name);
         if (!(value instanceof String text) || text.isBlank()) {
