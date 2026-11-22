@@ -17,7 +17,7 @@ import Constants from "expo-constants";
 export const API_URL =
   process.env.EXPO_PUBLIC_API_URL ||
   Constants.expoConfig?.extra?.apiUrl ||
-  "http://localhost:3333";
+  "http://localhost:8080";
 export const EMERGENCY_NUMBERS = {
   samu: "192",
   bombeiros: "193",
