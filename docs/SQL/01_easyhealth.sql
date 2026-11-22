@@ -175,6 +175,22 @@ CREATE TABLE IF NOT EXISTS favorites (
     CONSTRAINT fk_favorites_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- Avaliações e comentários dos pacientes sobre as clínicas.
+CREATE TABLE IF NOT EXISTS establishment_reviews (
+    id varchar(36) PRIMARY KEY,
+    establishment_id varchar(191) NOT NULL,
+    patient_id varchar(36) NOT NULL,
+    nota int NOT NULL,
+    comentario text,
+    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_establishment_reviews_patient (establishment_id, patient_id),
+    KEY idx_establishment_reviews_date (establishment_id, created_at),
+    CONSTRAINT fk_establishment_reviews_patient
+        FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT chk_establishment_reviews_nota CHECK (nota BETWEEN 1 AND 5)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 CREATE TABLE IF NOT EXISTS notifications (
     id varchar(36) PRIMARY KEY,
     user_id varchar(36) NOT NULL,
