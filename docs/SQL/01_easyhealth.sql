@@ -114,6 +114,24 @@ CREATE TABLE IF NOT EXISTS medical_history_records (
     CONSTRAINT chk_medical_history_type CHECK (tipo IN ('exame', 'vacina', 'medicamento', 'documento'))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+-- Autorizações de compartilhamento do histórico entre paciente e médico.
+CREATE TABLE IF NOT EXISTS medical_history_shares (
+    id varchar(36) PRIMARY KEY,
+    patient_id varchar(36) NOT NULL,
+    medico_id varchar(36) NOT NULL,
+    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    revoked_at timestamp NULL,
+    active_medico_id varchar(36) NULL,
+    UNIQUE KEY uq_medical_history_shares_active (patient_id, active_medico_id),
+    KEY idx_medical_history_shares_patient (patient_id, created_at),
+    KEY idx_medical_history_shares_medico (medico_id, revoked_at),
+    CONSTRAINT fk_medical_history_shares_patient
+        FOREIGN KEY (patient_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_medical_history_shares_medico
+        FOREIGN KEY (medico_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT chk_medical_history_shares_different_users
+        CHECK (patient_id <> medico_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 CREATE TABLE IF NOT EXISTS appointments (
     id varchar(36) PRIMARY KEY,
     user_id varchar(36) NOT NULL,
@@ -128,6 +146,18 @@ CREATE TABLE IF NOT EXISTS appointments (
     KEY idx_appointments_medico_data (medico_id, data, horario),
     CONSTRAINT fk_appointments_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT fk_appointments_medico FOREIGN KEY (medico_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Auditoria de consultas ao histórico compartilhado com médicos.
+CREATE TABLE IF NOT EXISTS medical_history_access_logs (
+    id varchar(36) PRIMARY KEY,
+    patient_id varchar(36) NOT NULL,
+    medico_id varchar(36) NOT NULL,
+    accessed_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    tipo varchar(24) NULL,
+    records_count int NOT NULL DEFAULT 0,
+    KEY idx_history_access_patient (patient_id, accessed_at),
+    KEY idx_history_access_medico (medico_id, accessed_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Linhas locais usadas para serializar reservas por estabelecimento sem
