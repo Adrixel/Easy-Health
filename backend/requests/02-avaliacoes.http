@@ -1,0 +1,37 @@
+
+@baseUrl = http://localhost:3333
+@clinicaId = parceiro-clinica-exemplo
+
+### Login do paciente
+# @name loginPaciente
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "maria.silva@email.com",
+  "senha": "senha123"
+}
+
+### Criar avaliação da Clínica Bem Viver
+# @name criarAvaliacao
+POST {{baseUrl}}/api/estabelecimentos/{{clinicaId}}/avaliacoes
+Authorization: Bearer {{loginPaciente.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "nota": 5,
+  "comentario": "Atendimento muito bom e equipe atenciosa."
+}
+
+### Listar avaliações da clínica
+GET {{baseUrl}}/api/estabelecimentos/{{clinicaId}}/avaliacoes
+
+### Editar minha avaliação
+PUT {{baseUrl}}/api/estabelecimentos/{{clinicaId}}/avaliacoes/minha
+Authorization: Bearer {{loginPaciente.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "nota": 4,
+  "comentario": "Atendimento bom, com alguns pontos a melhorar."
+}
