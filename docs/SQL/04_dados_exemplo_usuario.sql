@@ -1,5 +1,3 @@
-```sql
-
 -- EASY HEALTH
 -- 40 USUÁRIOS DE DEMONSTRAÇÃO
 -- MySQL 8+
@@ -15,7 +13,6 @@
 
 
 START TRANSACTION;
-
 
 -- PACIENTES (10)
 
