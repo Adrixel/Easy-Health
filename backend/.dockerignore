@@ -3,11 +3,6 @@ target
 node_modules
 dist
 
-# Local configuration must not enter the image build context.
-.env
-.env.*
-!.env.example
-
 # Version control and local logs.
 .git
 *.log

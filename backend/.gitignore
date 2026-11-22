@@ -1,6 +1,2 @@
+# Maven build output
 target/
-
-# Configuração local com segredos: nunca versionar (use .env.example como modelo).
-.env
-.env.*
-!.env.example

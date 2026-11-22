@@ -23,7 +23,7 @@
       "kind": "process",
       "command": "npm",
       "args": ["test", "--", "--test-reporter=tap"],
-      "verificationMethod": "test-results",
+      "verificationMethod": "exit-code",
       "expected": "0",
       "timeoutSeconds": 300
     },

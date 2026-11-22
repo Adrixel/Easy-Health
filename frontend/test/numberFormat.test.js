@@ -9,7 +9,16 @@ test("formats valid numeric values to one decimal place", () => {
 });
 
 test("returns null for missing or invalid values", () => {
-  for (const value of [undefined, null, "", " ", "not-a-number", NaN, Infinity, true]) {
+  for (const value of [
+    undefined,
+    null,
+    "",
+    " ",
+    "not-a-number",
+    NaN,
+    Infinity,
+    true,
+  ]) {
     assert.equal(formatDecimal(value), null);
   }
 });

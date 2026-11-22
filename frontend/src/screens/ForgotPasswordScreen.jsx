@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { KeyboardAvoidingView, Platform, Text, TextInput, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { AppAlert as Alert } from "@/services/appAlert";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -16,7 +22,10 @@ export function ForgotPasswordScreen() {
   const [loading, setLoading] = useState(false);
   async function handleSend() {
     if (!email) {
-      Alert.alert("Digite seu e-mail", "Informe o e-mail cadastrado para receber o link.");
+      Alert.alert(
+        "Digite seu e-mail",
+        "Informe o e-mail cadastrado para receber o link.",
+      );
       return;
     }
     setLoading(true);
@@ -24,66 +33,111 @@ export function ForgotPasswordScreen() {
       await authService.forgotPassword(email);
       Alert.alert(
         "Solicitação recebida",
-        "Se a conta existir, enviaremos instruções. O envio de e-mail ainda não está configurado neste ambiente."
+        "Se a conta existir, enviaremos instruções. O envio de e-mail ainda não está configurado neste ambiente.",
       );
       navigation.goBack();
     } catch (error) {
-      Alert.alert("Não foi possível enviar", getApiErrorMessage(error, "Verifique o e-mail informado e tente novamente."));
+      Alert.alert(
+        "Não foi possível enviar",
+        getApiErrorMessage(
+          error,
+          "Verifique o e-mail informado e tente novamente.",
+        ),
+      );
     } finally {
       setLoading(false);
     }
   }
-  return <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{
-    flex: 1,
-    backgroundColor: colors.bg,
-    padding: spacing.lg,
-    paddingTop: spacing.xl
-  }}>
-      <ScreenHeader title="Recuperar Senha" onBack={() => navigation.goBack()} />
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{
+        flex: 1,
+        backgroundColor: colors.bg,
+        padding: spacing.lg,
+        paddingTop: spacing.xl,
+      }}
+    >
+      <ScreenHeader
+        title="Recuperar Senha"
+        onBack={() => navigation.goBack()}
+      />
 
-      <View style={{
-      alignItems: "center",
-      marginTop: 12,
-      marginBottom: 28
-    }}>
-        <View style={{
-        width: 56,
-        height: 56,
-        borderRadius: 18,
-        backgroundColor: colors.primarySoft,
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: 16
-      }}>
+      <View
+        style={{
+          alignItems: "center",
+          marginTop: 12,
+          marginBottom: 28,
+        }}
+      >
+        <View
+          style={{
+            width: 56,
+            height: 56,
+            borderRadius: 18,
+            backgroundColor: colors.primarySoft,
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 16,
+          }}
+        >
           <Ionicons name="heart" size={24} color={colors.primary} />
         </View>
-        <Text style={{
-        fontFamily: fonts.regular,
-        fontSize: 13,
-        color: colors.inkSoft,
-        textAlign: "center",
-        lineHeight: 19
-      }}>
-          Digite seu e-mail cadastrado para receber um link de recuperação de senha.
+        <Text
+          style={{
+            fontFamily: fonts.regular,
+            fontSize: 13,
+            color: colors.inkSoft,
+            textAlign: "center",
+            lineHeight: 19,
+          }}
+        >
+          Digite seu e-mail cadastrado para receber um link de recuperação de
+          senha.
         </Text>
       </View>
 
-      <Text style={{
-      fontFamily: fonts.semiBold,
-      fontSize: 12,
-      color: colors.ink,
-      marginBottom: 6
-    }}>E-mail</Text>
-      <TextInput placeholder="exemplo@email.com" placeholderTextColor={colors.inkFaint} value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" style={[inputStyle, {
-      marginBottom: 20
-    }]} />
+      <Text
+        style={{
+          fontFamily: fonts.semiBold,
+          fontSize: 12,
+          color: colors.ink,
+          marginBottom: 6,
+        }}
+      >
+        E-mail
+      </Text>
+      <TextInput
+        placeholder="exemplo@email.com"
+        placeholderTextColor={colors.inkFaint}
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+        style={[
+          inputStyle,
+          {
+            marginBottom: 20,
+          },
+        ]}
+      />
 
-      <PrimaryButton label="Enviar Link" loading={loading} onPress={handleSend} />
+      <PrimaryButton
+        label="Enviar Link"
+        loading={loading}
+        onPress={handleSend}
+      />
 
-      <View style={{
-      marginTop: 18
-    }}>
-        <InlineLink label="Voltar ao login" onPress={() => navigation.goBack()} />
+      <View
+        style={{
+          marginTop: 18,
+        }}
+      >
+        <InlineLink
+          label="Voltar ao login"
+          onPress={() => navigation.goBack()}
+        />
       </View>
-    </KeyboardAvoidingView>;
+    </KeyboardAvoidingView>
+  );
 }

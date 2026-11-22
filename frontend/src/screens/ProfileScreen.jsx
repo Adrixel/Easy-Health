@@ -9,113 +9,165 @@ import { Avatar } from "@/components/Avatar";
 import { useAppNavigation } from "@/navigation/useAppNavigation";
 import { profileService } from "@/services/profileService";
 import { authService } from "@/services/authService";
-const MENU_ITEMS = [{
-  icon: "person-outline",
-  label: "Editar Perfil",
-  route: "EditProfile"
-}, {
-  icon: "heart-outline",
-  label: "Favoritos",
-  route: "Favorites"
-}, {
-  icon: "notifications-outline",
-  label: "Notificações",
-  route: "Notifications"
-}];
+import { AdBanner } from "@/components/AdBanner";
+const MENU_ITEMS = [
+  {
+    icon: "person-outline",
+    label: "Editar Perfil",
+    route: "EditProfile",
+  },
+  {
+    icon: "heart-outline",
+    label: "Favoritos",
+    route: "Favorites",
+  },
+  {
+    icon: "notifications-outline",
+    label: "Notificações",
+    route: "Notifications",
+  },
+];
 export function ProfileScreen() {
   const navigation = useAppNavigation();
   const [profile, setProfile] = useState(null);
-  useFocusEffect(useCallback(() => {
-    let active = true;
-    profileService.getMe().then(data => {
-      if (active) setProfile(data);
-    });
-    return () => {
-      active = false;
-    };
-  }, []));
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      profileService.getMe().then((data) => {
+        if (active) setProfile(data);
+      });
+      return () => {
+        active = false;
+      };
+    }, []),
+  );
   function handleLogout() {
-    Alert.alert("Sair da conta", "Tem certeza que deseja sair?", [{
-      text: "Cancelar",
-      style: "cancel"
-    }, {
-      text: "Sair",
-      style: "destructive",
-      onPress: async () => {
-        await authService.logout();
-      }
-    }]);
+    Alert.alert("Sair da conta", "Tem certeza que deseja sair?", [
+      {
+        text: "Cancelar",
+        style: "cancel",
+      },
+      {
+        text: "Sair",
+        style: "destructive",
+        onPress: async () => {
+          await authService.logout();
+        },
+      },
+    ]);
   }
-  return <ScrollView style={{
-    flex: 1,
-    backgroundColor: colors.bg
-  }} contentContainerStyle={{
-    padding: spacing.lg,
-    paddingTop: spacing.xl
-  }}>
-      <Text style={{
-      fontFamily: fonts.bold,
-      fontSize: 19,
-      color: colors.ink,
-      marginBottom: 20
-    }}>Perfil</Text>
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{
+          padding: spacing.lg,
+          paddingTop: spacing.xl,
+        }}
+      >
+      <Text
+        style={{
+          fontFamily: fonts.bold,
+          fontSize: 19,
+          color: colors.ink,
+          marginBottom: 20,
+        }}
+      >
+        Perfil
+      </Text>
 
-      <View style={{
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 12,
-      marginBottom: 24
-    }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+          marginBottom: 24,
+        }}
+      >
         <Avatar uri={profile?.avatarUrl} size={56} />
         <View>
-          <Text style={{
-          fontFamily: fonts.bold,
-          fontSize: 16,
-          color: colors.ink
-        }}>{profile?.nome ?? "Visitante"}</Text>
-          <Text style={{
-          fontFamily: fonts.regular,
-          fontSize: 12,
-          color: colors.inkSoft
-        }}>{profile?.email || "Dados locais — sem conta"}</Text>
+          <Text
+            style={{
+              fontFamily: fonts.bold,
+              fontSize: 16,
+              color: colors.ink,
+            }}
+          >
+            {profile?.nome ?? "Visitante"}
+          </Text>
+          <Text
+            style={{
+              fontFamily: fonts.regular,
+              fontSize: 12,
+              color: colors.inkSoft,
+            }}
+          >
+            {profile?.email || "Dados locais — sem conta"}
+          </Text>
         </View>
       </View>
 
-      <View style={{
-      backgroundColor: colors.panel,
-      borderRadius: radius.lg,
-      overflow: "hidden",
-      marginBottom: 20
-    }}>
-        {MENU_ITEMS.map((item, i) => <Pressable key={item.route} onPress={() => navigation.navigate(item.route)} style={{
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 15,
-        borderBottomWidth: i === MENU_ITEMS.length - 1 ? 0 : 1,
-        borderBottomColor: colors.line
-      }}>
+      <View
+        style={{
+          backgroundColor: colors.panel,
+          borderRadius: radius.lg,
+          overflow: "hidden",
+          marginBottom: 20,
+        }}
+      >
+        {MENU_ITEMS.map((item, i) => (
+          <Pressable
+            key={item.route}
+            onPress={() => navigation.navigate(item.route)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 12,
+              paddingHorizontal: 16,
+              paddingVertical: 15,
+              borderBottomWidth: i === MENU_ITEMS.length - 1 ? 0 : 1,
+              borderBottomColor: colors.line,
+            }}
+          >
             <Ionicons name={item.icon} size={18} color={colors.primary} />
-            <Text style={{
-          flex: 1,
-          fontFamily: fonts.medium,
-          fontSize: 13.5,
-          color: colors.ink
-        }}>{item.label}</Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.inkFaint} />
-          </Pressable>)}
+            <Text
+              style={{
+                flex: 1,
+                fontFamily: fonts.medium,
+                fontSize: 13.5,
+                color: colors.ink,
+              }}
+            >
+              {item.label}
+            </Text>
+            <Ionicons
+              name="chevron-forward"
+              size={16}
+              color={colors.inkFaint}
+            />
+          </Pressable>
+        ))}
       </View>
 
-      <Pressable onPress={handleLogout} style={{
-      alignItems: "center",
-      paddingVertical: 10
-    }}>
-        <Text style={{
-        fontFamily: fonts.semiBold,
-        fontSize: 13,
-        color: colors.alertDark
-      }}>Sair da conta</Text>
+      <Pressable
+        onPress={handleLogout}
+        style={{
+          alignItems: "center",
+          paddingVertical: 10,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: fonts.semiBold,
+            fontSize: 13,
+            color: colors.alertDark,
+          }}
+        >
+          Sair da conta
+        </Text>
       </Pressable>
-    </ScrollView>;
+      </ScrollView>
+      <AdBanner />
+    </View>
+  );
 }

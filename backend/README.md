@@ -16,7 +16,7 @@ Se não existir `.env` local, esse comando cria um a partir do exemplo sem sobre
 docker compose up --build
 ```
 
-A API fica em `http://localhost:3333`; o Adminer fica em `http://localhost:8080` (selecione **MySQL**, servidor `db`). `01_easyhealth.sql` cria somente as tabelas necessárias à persistência do app. Na primeira inicialização do volume, o MySQL também executa `02_instituicoes_medicas.sql` (schema do catálogo separado `easyhealth_institutions`), `03_dados_exemplo_instituicoes.sql` (registros fictícios lidos pela API) e `04_dados_exemplo_usuario.sql` (conta de demonstração). Os dados de catálogo podem ser inseridos novamente sem duplicar os relacionamentos. O volume `easy-health-mysql-data` é novo e separado do volume PostgreSQL anterior. A conta de demonstração é `maria.silva@email.com` / `senha123`.
+A API fica em `http://localhost:3333`; o Adminer fica em `http://localhost:8080` (selecione **MySQL**, servidor `db`). `01_easyhealth.sql` cria somente as tabelas necessárias à persistência do app. Na primeira inicialização do volume, o MySQL também executa `02_instituicoes_medicas.sql` (schema do catálogo separado `easyhealth_institutions`), `03_dados_exemplo_instituicoes.sql` (registros fictícios lidos pela API) e `04_dados_exemplo_usuario.sql` (contas de demonstração). Os dados de catálogo podem ser inseridos novamente sem duplicar os relacionamentos. O volume `easy-health-mysql-data` é novo e separado do volume PostgreSQL anterior. As contas de demonstração usam a senha `senha123`; a conta principal de exemplos é `maria.silva@email.com`.
 
 Confira `GET http://localhost:3333/health` para verificar a API e a conexão com o banco. A pasta `requests/` contém chamadas de exemplo para a extensão REST Client do VS Code.
 
@@ -123,12 +123,13 @@ o hospital.
 
 ### OAuth Google e configurações
 
-Defina `GOOGLE_OAUTH_CLIENT_IDS` no ambiente do backend como a lista separada por vírgula de
-todos os Client IDs aceitos (Web/Android/iOS). Configure os Client IDs de cada plataforma no
-frontend por `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, `EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID` e
-`EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`. Veja o passo a passo no [README do frontend](../frontend/README.md#login-com-google).
-Não compartilhe nem inclua Client Secrets no aplicativo. Sem Client IDs, a rota Google responde
-`503` e o login com senha continua disponível.
+Defina `GOOGLE_OAUTH_CLIENT_IDS` no ambiente do backend com o Client ID Web usado como
+audiência do ID token. O frontend usa `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`; para iOS, configure
+também `EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID`. A configuração Android vincula o pacote
+`br.com.easyhealth.app` ao SHA-1 do certificado do build. Veja o passo a passo no
+[README do frontend](../frontend/README.md#login-com-google). O login nativo requer um
+development build e não funciona no Expo Go. Não compartilhe nem inclua Client Secrets no
+aplicativo. Sem Client IDs, a rota Google responde `503` e o login com senha continua disponível.
 
 O PDF da consulta é um resumo informativo e não constitui receita, atestado ou laudo clínico.
 Registros pessoais do histórico são inseridos pela própria pessoa usuária; não substituem

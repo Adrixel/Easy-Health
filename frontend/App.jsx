@@ -1,16 +1,24 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, Platform } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import * as SplashScreen from "expo-splash-screen";
-import { useFonts, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold, Inter_800ExtraBold } from "@expo-google-fonts/inter";
+import {
+  useFonts,
+  Inter_400Regular,
+  Inter_500Medium,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  Inter_800ExtraBold,
+} from "@expo-google-fonts/inter";
 import { colors } from "@/theme/colors";
 import { RootNavigator } from "@/navigation/RootNavigator";
 import { authService } from "@/services/authService";
 import { tokenStorage } from "@/services/tokenStorage";
-import { notificationService } from "@/services/notificationService";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/Toast";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
 SplashScreen.preventAutoHideAsync().catch(() => {});
 export default function App() {
   // Correção: a versão anterior carregava Fraunces (serifada), que não
@@ -21,11 +29,33 @@ export default function App() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
-    Inter_800ExtraBold
+    Inter_800ExtraBold,
   });
   const [checkingSession, setCheckingSession] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
+  useEffect(() => {
+    if (Platform.OS !== "android") return;
+
+    let mounted = true;
+    async function initializeAds() {
+      try {
+        const { default: mobileAds } = await import(
+          "react-native-google-mobile-ads"
+        );
+        await mobileAds().initialize();
+      } catch (error) {
+        if (mounted) {
+          console.error("Não foi possível inicializar o Google AdMob.", error);
+        }
+      }
+    }
+
+    initializeAds();
+    return () => {
+      mounted = false;
+    };
+  }, []);
   useEffect(() => {
     let mounted = true;
     async function restoreSession() {
@@ -50,39 +80,45 @@ export default function App() {
       unsubscribe();
     };
   }, []);
-  useEffect(() => {
-    if (isAuthenticated) {
-      notificationService.registerForPushNotifications().catch(() => {});
-    }
-  }, [isAuthenticated]);
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded && !checkingSession) {
       await SplashScreen.hideAsync();
     }
   }, [fontsLoaded, checkingSession]);
   if (!fontsLoaded || checkingSession) {
-    return <View style={{
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.bg
-    }}>
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: colors.bg,
+        }}
+      >
         <ActivityIndicator color={colors.primary} />
-      </View>;
+      </View>
+    );
   }
-  return <View style={{
-    flex: 1
-  }} onLayout={onLayoutRootView}>
-      <StatusBar style="dark" />
-      <ErrorBoundary>
-        <ToastProvider>
-          <NavigationContainer>
-            <RootNavigator isAuthenticated={isAuthenticated} isGuest={isGuest} onAuthenticated={() => {
-            setIsAuthenticated(true);
-            setIsGuest(false);
-          }} onGuest={() => setIsGuest(true)} />
-          </NavigationContainer>
-        </ToastProvider>
-      </ErrorBoundary>
-    </View>;
+  return (
+    <SafeAreaProvider>
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <StatusBar style="dark" />
+        <ErrorBoundary>
+          <ToastProvider>
+            <NavigationContainer>
+              <RootNavigator
+                isAuthenticated={isAuthenticated}
+                isGuest={isGuest}
+                onAuthenticated={() => {
+                  setIsAuthenticated(true);
+                  setIsGuest(false);
+                }}
+                onGuest={() => setIsGuest(true)}
+              />
+            </NavigationContainer>
+          </ToastProvider>
+        </ErrorBoundary>
+      </View>
+    </SafeAreaProvider>
+  );
 }

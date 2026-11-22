@@ -1,9 +1,8 @@
-node_modules/
+# Expo-generated files
 .expo/
+.expo-shared/
+/android/
 dist/
 web-build/
-*.log
-.env
-ios/
-android/
-.DS_Store
+coverage/
+*.tsbuildinfo
