@@ -1,0 +1,48 @@
+@baseUrl = http://localhost:3333
+
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "roberto.dono@email.com",
+  "senha": "senha123"
+}
+
+###
+
+# @name primeiroCadastro
+POST {{baseUrl}}/api/estabelecimentos?accessToken={{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "nome": "Clínica Teste CNPJ A",
+  "tipo": "clinica",
+  "redeAtendimento": "privado",
+  "logradouro": "Rua de Teste",
+  "bairro": "Centro",
+  "cidade": "Campo Alegre",
+  "uf": "AL",
+  "latitude": -9.781,
+  "longitude": -36.356,
+  "cnpj": "12345678000199"
+}
+
+###
+
+# @name segundoCadastro
+POST {{baseUrl}}/api/estabelecimentos?accessToken={{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "nome": "Clínica Teste CNPJ B",
+  "tipo": "clinica",
+  "redeAtendimento": "privado",
+  "logradouro": "Rua de Teste",
+  "bairro": "Centro",
+  "cidade": "Campo Alegre",
+  "uf": "AL",
+  "latitude": -9.781,
+  "longitude": -36.356,
+  "cnpj": "12345678000199"
+}

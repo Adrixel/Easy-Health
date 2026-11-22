@@ -16,6 +16,9 @@ Content-Type: application/json
   "senha": "senha123"
 }
 
+### Consultar horários disponíveis
+GET {{baseUrl}}/api/estabelecimentos/parceiro-hospital-exemplo/horarios-disponiveis?data={{bookingDate}}
+
 ### Listar meus agendamentos (Home > Próximas Consultas / Histórico)
 GET {{baseUrl}}/api/agendamentos?accessToken={{login.response.body.$.accessToken}}
 
@@ -24,8 +27,9 @@ GET {{baseUrl}}/api/agendamentos?accessToken={{login.response.body.$.accessToken
 POST {{baseUrl}}/api/agendamentos?accessToken={{login.response.body.$.accessToken}}
 Content-Type: application/json
 
-{
-  "establishmentId": "hosp-sao-lucas",
+ {
+  "establishmentId": "parceiro-hospital-exemplo",
+  "medicoId": "demo-medico",
   "especialidade": "Cardiologia",
   "data": "{{bookingDate}}",
   "horario": "10:00"

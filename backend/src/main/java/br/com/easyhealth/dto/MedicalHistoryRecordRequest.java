@@ -11,15 +11,32 @@ public record MedicalHistoryRecordRequest(
         @NotBlank(message = "Selecione o tipo de registro.")
         @Pattern(regexp = "exame|vacina|medicamento|documento", message = "Tipo de registro inválido.")
         String tipo,
+
         @NotBlank(message = "Informe o título do registro.")
         @Size(max = 180, message = "O título deve ter no máximo 180 caracteres.")
         String titulo,
+
         @NotNull(message = "Informe a data do registro.")
         LocalDate data,
+
         @Size(max = 4000, message = "A descrição deve ter no máximo 4000 caracteres.")
         String descricao,
+
         @Size(max = 180, message = "O profissional deve ter no máximo 180 caracteres.")
         String profissional,
+
         @Size(max = 255, message = "O local deve ter no máximo 255 caracteres.")
-        String local) {
+        String local,
+
+        @Size(max = 36, message = "O ID do médico é inválido.")
+        String medicoId,
+
+        @Size(max = 191, message = "O ID da instituição é inválido.")
+        String establishmentId,
+
+        @Size(max = 4000, message = "O resultado deve ter no máximo 4000 caracteres.")
+        String resultado,
+
+        @Size(max = 1000, message = "O endereço do laudo deve ter no máximo 1000 caracteres.")
+        String laudoUrl) {
 }

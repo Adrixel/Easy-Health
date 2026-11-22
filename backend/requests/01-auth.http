@@ -18,7 +18,17 @@ Content-Type: application/json
   "dataNascimento": "2000-01-01"
 }
 
-### Login (usuário de demonstração do seed)
+### Login médico de demonstração
+# @name loginMedico
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana.medica@email.com",
+  "senha": "senha123"
+}
+
+### Login paciente de demonstração
 # @name login
 POST {{baseUrl}}/api/auth/login
 Content-Type: application/json
@@ -27,6 +37,28 @@ Content-Type: application/json
   "email": "maria.silva@email.com",
   "senha": "senha123"
 }
+### Compartilhar histórico com médico
+# @name compartilhar
+POST {{baseUrl}}/api/historico/compartilhamentos
+Authorization: Bearer {{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "medicoId": "demo-medico"
+}
+
+### Tentativa indevida: médico criando compartilhamento
+POST {{baseUrl}}/api/historico/compartilhamentos
+Authorization: Bearer {{loginMedico.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "medicoId": "demo-user"
+}
+
+### Listar compartilhamentos do paciente
+GET {{baseUrl}}/api/historico/compartilhamentos
+Authorization: Bearer {{login.response.body.$.accessToken}}
 
 ### Renovar token (usa o refreshToken do login acima)
 POST {{baseUrl}}/api/auth/refresh-token
@@ -66,3 +98,16 @@ Content-Type: application/json
 
 ### Logout (revoga as sessões do usuário logado)
 POST {{baseUrl}}/api/auth/logout?accessToken={{login.response.body.$.accessToken}}
+
+### Médico consulta histórico autorizado do paciente
+GET {{baseUrl}}/api/medicos/pacientes/demo-user/historico/registros
+Authorization: Bearer {{loginMedico.response.body.$.accessToken}}
+
+### Paciente revoga compartilhamento com o médico
+# @name revogarCompartilhamento
+DELETE {{baseUrl}}/api/historico/compartilhamentos/{{compartilhar.response.body.$.id}}
+Authorization: Bearer {{login.response.body.$.accessToken}}
+
+### Médico tenta acessar histórico após revogação
+GET {{baseUrl}}/api/medicos/pacientes/demo-user/historico/registros
+Authorization: Bearer {{loginMedico.response.body.$.accessToken}}
