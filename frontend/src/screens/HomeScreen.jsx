@@ -8,6 +8,7 @@ import { Pill } from "@/components/Pill";
 import { Avatar } from "@/components/Avatar";
 import { AssistantFab } from "@/components/AssistantFab";
 import { AssistantPanel } from "@/components/AssistantPanel";
+import { AdBanner } from "@/components/AdBanner";
 import { useAppNavigation } from "@/navigation/useAppNavigation";
 import { profileService } from "@/services/profileService";
 import { bookingService } from "@/services/bookingService";
@@ -57,6 +58,9 @@ export function HomeScreen() {
       }}
     >
       <ScrollView
+        style={{
+          flex: 1,
+        }}
         contentContainerStyle={{
           padding: spacing.lg,
           paddingBottom: 100,
@@ -375,7 +379,8 @@ export function HomeScreen() {
         ))}
       </ScrollView>
 
-      <AssistantFab onPress={() => setChatOpen(true)} />
+      <AdBanner />
+      <AssistantFab bottom={84} onPress={() => setChatOpen(true)} />
       <AssistantPanel
         visible={chatOpen}
         onClose={() => setChatOpen(false)}

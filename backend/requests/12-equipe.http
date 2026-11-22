@@ -1,0 +1,34 @@
+@baseUrl = http://localhost:3333
+
+### Login (troque o e-mail para testar cada cargo)
+# A resposta traz o cargo em usuario.cargo (também repetido em user.cargo):
+# 200: {
+#   "usuario": { "id": "demo-dono", "nome": "Roberto Dono", "email": "roberto.dono@email.com", "cargo": "dono", ... },
+#   "user": { ...o mesmo conteúdo de "usuario"... },
+#   "accessToken": "...",
+#   "refreshToken": "..."
+# }
+### Login (troque o e-mail para testar cada cargo)
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "roberto.dono@email.com",
+  "senha": "senha123"
+}
+
+### Painel da equipe (funcionario, medico e dono)
+# 200: { "mensagem": "Painel da equipe", "nome": "Roberto Dono", "cargo": "dono" }
+# 401: sem login ou token inválido ("Autenticação necessária.")
+# 403: cargo sem permissão ("Você não tem permissão para fazer isso.")
+GET {{baseUrl}}/api/equipe/painel?accessToken={{login.response.body.$.accessToken}}
+
+### Administração (somente dono)
+# 200: { "mensagem": "Área de administração", "nome": "Roberto Dono", "cargo": "dono" }
+# 401: sem login ou token inválido ("Autenticação necessária.")
+# 403: cargo sem permissão ("Você não tem permissão para fazer isso.")
+GET {{baseUrl}}/api/equipe/administracao?accessToken={{login.response.body.$.accessToken}}
+
+### Consultar clínicas do usuário logado
+GET {{baseUrl}}/api/equipe/minhas-clinicas?accessToken={{login.response.body.$.accessToken}}

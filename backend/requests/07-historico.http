@@ -1,7 +1,8 @@
+
 @baseUrl = http://localhost:3333
 
-### Easy Health API — Histórico de saúde (seção 21.7 do readme)
-# Todas exigem autenticação. O seed não cria consultas.
+### Easy Health API — Histórico de saúde
+# Todas as rotas exigem autenticação.
 
 ### Login
 # @name login
@@ -13,24 +14,64 @@ Content-Type: application/json
   "senha": "senha123"
 }
 
-### Listar minhas consultas (Tela "Meu Histórico")
-# O histórico mostra os agendamentos com status "concluido" ou "cancelado".
-# Para ter algo aqui, crie e cancele um agendamento em 06-agendamentos.http.
+### Listar minhas consultas
 GET {{baseUrl}}/api/historico/consultas?accessToken={{login.response.body.$.accessToken}}
 
-### Detalhe de uma consulta (Tela "Detalhe da Consulta")
-# Troque "<id>" por um id retornado na listagem acima.
+### Detalhe de uma consulta
+# Substitua <id> por um ID retornado na listagem.
 GET {{baseUrl}}/api/historico/consultas/<id>?accessToken={{login.response.body.$.accessToken}}
 
-### Exames, vacinas e medicamentos — ainda não implementados no MVP
-# (retornam lista vazia; ver "Prioridade futura" no roadmap do readme)
+### Cadastrar exame
+# @name cadastrarExame
+POST {{baseUrl}}/api/historico/registros?accessToken={{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "tipo": "exame",
+  "titulo": "Hemograma completo",
+  "data": "2026-11-21",
+  "descricao": "Exame de rotina",
+  "profissional": "Dra. Ana Médica",
+  "local": "Hospital Horizonte",
+  "medicoId": "demo-medico",
+  "establishmentId": "parceiro-hospital-exemplo",
+  "resultado": "Resultado demonstrativo",
+  "laudoUrl": null
+}
+
+### Listar todos os meus registros
+GET {{baseUrl}}/api/historico/registros?accessToken={{login.response.body.$.accessToken}}
+
+### Listar somente exames
 GET {{baseUrl}}/api/historico/exames?accessToken={{login.response.body.$.accessToken}}
 
-###
+### Listar somente vacinas
 GET {{baseUrl}}/api/historico/vacinas?accessToken={{login.response.body.$.accessToken}}
 
-###
+### Listar somente medicamentos
 GET {{baseUrl}}/api/historico/medicamentos?accessToken={{login.response.body.$.accessToken}}
 
-###
+### Listar somente documentos
 GET {{baseUrl}}/api/historico/documentos?accessToken={{login.response.body.$.accessToken}}
+
+### Editar registro
+# Substitua <id> pelo ID retornado no cadastro.
+PUT {{baseUrl}}/api/historico/registros/7b1f2f25-93d8-4040-b7a9-25e346ee90f2?accessToken={{login.response.body.$.accessToken}}
+Content-Type: application/json
+
+{
+  "tipo": "exame",
+  "titulo": "Hemograma completo atualizado",
+  "data": "2026-11-21",
+  "descricao": "Exame de rotina atualizado",
+  "profissional": "Dra. Ana Médica",
+  "local": "Hospital Horizonte",
+  "medicoId": "demo-medico",
+  "establishmentId": "parceiro-hospital-exemplo",
+  "resultado": "Resultado atualizado",
+  "laudoUrl": null
+}
+
+### Excluir registro
+# Substitua <id> pelo ID retornado no cadastro.
+DELETE {{baseUrl}}/api/historico/registros/7b1f2f25-93d8-4040-b7a9-25e346ee90f2?accessToken={{login.response.body.$.accessToken}}

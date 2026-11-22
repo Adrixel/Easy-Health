@@ -1,60 +1,95 @@
 import * as Notifications from "expo-notifications";
-import { AndroidImportance } from "expo-notifications";
-import * as Device from "expo-device";
+import { AndroidImportance, SchedulableTriggerInputTypes } from "expo-notifications";
 import { Platform } from "react-native";
-import { api } from "./api";
+import { getAppointmentReminderDate } from "@/utils/appointmentReminder";
+import { formatDateLong } from "@/utils/date";
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
-    shouldSetBadge: false
-  })
+    shouldSetBadge: false,
+  }),
 });
+
 export const notificationService = {
   /** Cria o canal de notificação exigido pelo Android 8+ para notificações aparecerem. */
   async setupAndroidChannel() {
     if (Platform.OS === "android") {
       await Notifications.setNotificationChannelAsync("default", {
         name: "Easy Health",
-        importance: AndroidImportance.DEFAULT,
+        importance: AndroidImportance.HIGH,
         vibrationPattern: [0, 250, 250, 250],
-        lightColor: "#146B63"
+        lightColor: "#047857",
+        sound: "default",
       });
     }
   },
-  /** Pede permissão e registra o token do dispositivo (expo push token) no backend. */
-  async registerForPushNotifications() {
-    if (!Device.isDevice) return null; // emuladores não recebem push de verdade
 
-    const {
-      status: existing
-    } = await Notifications.getPermissionsAsync();
-    let finalStatus = existing;
-    if (existing !== "granted") {
-      const {
-        status
-      } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
-    }
-    if (finalStatus !== "granted") return null;
+  async requestPermission() {
+    if (Platform.OS === "web") return false;
+
     await this.setupAndroidChannel();
-    const token = (await Notifications.getExpoPushTokenAsync()).data;
-    try {
-      await api.post("/api/users/me/push-token", {
-        token
-      });
-    } catch {
-      // Falha ao registrar não deve travar o app — tenta de novo no próximo login.
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    const { status } =
+      existingStatus === "granted"
+        ? { status: existingStatus }
+        : await Notifications.requestPermissionsAsync();
+
+    return status === "granted";
+  },
+
+  async hasAppointmentReminder(bookingId) {
+    if (Platform.OS === "web") return false;
+
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    return scheduled.some(
+      (notification) =>
+        notification.content.data?.type === "appointment-reminder" &&
+        notification.content.data?.bookingId === bookingId,
+    );
+  },
+
+  async scheduleAppointmentReminder(booking) {
+    if (Platform.OS === "web") return { status: "unavailable" };
+
+    const reminderDate = getAppointmentReminderDate(booking);
+    if (!reminderDate) return { status: "too-soon" };
+
+    if (!(await this.requestPermission())) {
+      return { status: "permission-denied" };
     }
-    return token;
+
+    const scheduled = await Notifications.getAllScheduledNotificationsAsync();
+    const existingReminders = scheduled.filter(
+      (notification) =>
+        notification.content.data?.type === "appointment-reminder" &&
+        notification.content.data?.bookingId === booking.id,
+    );
+    await Promise.all(
+      existingReminders.map((notification) =>
+        Notifications.cancelScheduledNotificationAsync(notification.identifier),
+      ),
+    );
+
+    const identifier = await Notifications.scheduleNotificationAsync({
+      content: {
+        title: "Lembrete de consulta",
+        body: `${booking.especialidade || "Consulta"} em ${formatDateLong(booking.data)} às ${booking.horario}.`,
+        data: {
+          type: "appointment-reminder",
+          bookingId: booking.id,
+        },
+        sound: "default",
+      },
+      trigger: {
+        type: SchedulableTriggerInputTypes.DATE,
+        date: reminderDate,
+        channelId: "default",
+      },
+    });
+
+    return { status: "scheduled", identifier, reminderDate };
   },
-  async listNotifications() {
-    const {
-      data
-    } = await api.get("/api/notificacoes");
-    return data;
-  },
-  async markAsRead(id) {
-    await api.put(`/api/notificacoes/${id}/lida`);
-  }
+
 };

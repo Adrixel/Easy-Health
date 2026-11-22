@@ -26,6 +26,24 @@
     },
     "plugins": [
       [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24,
+            "compileSdkVersion": 37,
+            "targetSdkVersion": 35,
+            "enableMinifyInReleaseBuilds": false
+          }
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-1541774679229499~4719792754",
+          "androidSdk": "classic"
+        }
+      ],
+      [
         "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "O Easy Health usa sua localização para encontrar hospitais, clínicas e UBS mais próximos, especialmente no Modo Emergência.",

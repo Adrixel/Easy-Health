@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import br.com.easyhealth.dto.LoginRequest;
 import br.com.easyhealth.dto.RegisterRequest;
+import br.com.easyhealth.model.Cargo;
 import br.com.easyhealth.model.User;
 import br.com.easyhealth.repository.TokenRepository;
 import br.com.easyhealth.repository.UserRepository;
@@ -123,10 +124,29 @@ public class AuthService {
         }
         return tokens.findActiveUser(hash(token), "access");
     }
-
     public String requireUserId(HttpServletRequest request) {
         return userIdFromAccessToken(readAccessToken(request))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, UNAUTHORIZED));
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, UNAUTHORIZED));
+    }
+
+    public User requireUser(HttpServletRequest request) {
+        String userId = requireUserId(request);
+        return users.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "Usuário não encontrado."));
+    }
+
+    public User requireCargo(HttpServletRequest request, Cargo cargo) {
+        User user = requireUser(request);
+
+        if (user.cargo() != cargo) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Você não tem permissão para realizar esta ação.");
+        }
+
+        return user;
     }
 
     @Transactional

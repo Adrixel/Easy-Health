@@ -9,7 +9,8 @@ Frontend mobile do Easy Health, incluindo o **Assistente de IA** (navegação gu
 - **axios** com interceptors de auth (access/refresh token)
 - **expo-secure-store** — tokens no Android Keystore / iOS Keychain (nunca em `AsyncStorage` puro)
 - **expo-location** — GPS para busca de atendimento e Modo Emergência
-- **expo-notifications** — push notifications (canal Android)
+- **OpenStreetMap.de** — mapa de estabelecimentos com pontos e controles de zoom, sem chave de API
+- **expo-notifications** — lembretes locais com notificações nativas
 - **expo-calendar**, **expo-image-picker**, **expo-print** e **expo-sharing** — calendário,
   foto do perfil e resumo de consulta em PDF
 - **expo-auth-session** — login com Google, com verificação do token no backend
@@ -42,6 +43,13 @@ Escaneie o QR code com o app **Expo Go** no Android, ou pressione `a` para abrir
 Alertas do app também aparecem como mensagens textuais dentro da interface web e mobile.
 No Android, a caixa de diálogo nativa continua disponível; confirmações com ações podem ser
 concluídas pelo alerta textual.
+
+Na confirmação do agendamento, o app mobile permite ativar um lembrete local:
+24 horas antes da consulta ou, para consultas mais próximas, 1 hora antes.
+Essa notificação é agendada pelo sistema do dispositivo e não depende de conexão
+no horário do lembrete. É necessário permitir notificações; a versão web não
+oferece esse lembrete nativo. O backend ainda não envia notificações push
+remotas.
 
 ## Configuração da API
 
