@@ -13,12 +13,14 @@ import { useAppNavigation } from "@/navigation/useAppNavigation";
 import { profileService } from "@/services/profileService";
 import { bookingService } from "@/services/bookingService";
 import { formatDateShort } from "@/utils/date";
+
 export function HomeScreen() {
   const navigation = useAppNavigation();
   const [chatOpen, setChatOpen] = useState(false);
   const [profile, setProfile] = useState(null);
   const [bookings, setBookings] = useState([]);
   const [searchText, setSearchText] = useState("");
+
   useEffect(() => {
     profileService.getMe().then(setProfile);
     bookingService
@@ -28,20 +30,26 @@ export function HomeScreen() {
         setBookings([]);
       });
   }, []);
+
   function handleAssistantNavigate(screen) {
     setChatOpen(false);
     if (screen === "emergencia") navigation.navigate("Emergency");
     else if (screen === "primeiros_socorros") navigation.navigate("FirstAid");
+    else if (screen === "medicamentos") navigation.navigate("Medications");
+    else if (screen === "saude_mental") navigation.navigate("MentalHealth");
+    else if (screen === "cuidadoras") navigation.navigate("Caregivers");
     else if (screen === "busca_atendimento") navigation.navigate("Search");
     else if (screen === "historico") navigation.navigate("History");
     else if (screen === "perfil") navigation.navigate("Profile");
     else navigation.navigate("Home");
   }
+
   function submitSearch() {
     navigation.navigate("Search", {
       query: searchText || undefined,
     });
   }
+
   return (
     <View
       style={{
@@ -213,6 +221,24 @@ export function HomeScreen() {
           }}
         >
           <Tile
+            label="Medicamentos"
+            desc="Alertas e controle diário"
+            icon="medical-outline"
+            onPress={() => navigation.navigate("Medications")}
+          />
+          <Tile
+            label="Saúde Mental"
+            desc="Guias de apoio e crises"
+            icon="heart-outline"
+            onPress={() => navigation.navigate("MentalHealth")}
+          />
+          <Tile
+            label="Cuidadoras"
+            desc="Profissionais no LinkedIn"
+            icon="people-outline"
+            onPress={() => navigation.navigate("Caregivers")}
+          />
+          <Tile
             label="Primeiros Socorros"
             desc="Guias úteis offline"
             icon="medkit-outline"
@@ -236,6 +262,14 @@ export function HomeScreen() {
             icon="calendar-outline"
             onPress={() => navigation.navigate("History")}
           />
+
+          <Tile
+            label="Painel Equipa"
+            desc="Gestão e clínicas"
+            icon="briefcase-outline"
+           onPress={() => navigation.navigate("TeamPanel")}
+          />
+          
         </View>
 
         {/* Próximas consultas */}

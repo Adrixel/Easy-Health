@@ -1,4 +1,3 @@
-```sql
 
 -- EASY HEALTH
 -- 40 USUÁRIOS DE DEMONSTRAÇÃO
@@ -101,14 +100,6 @@ VALUES
 
 -- MÉDICOS (10)
 
-INSERT IGNORE INTO users (
-    id, nome, email, senha_hash, telefone,
-    data_nascimento, tipo_sanguineo,
-    email_verificado, cargo
-)
-AS incoming
-ON DUPLICATE KEY UPDATE id = users.id;
-
 INSERT INTO users (id, nome, email, senha_hash, telefone, email_verificado, cargo)
 VALUES
   ('demo-funcionario', 'Carlos Funcionário', 'carlos.funcionario@email.com',
@@ -119,3 +110,4 @@ VALUES
    '$2a$10$TkitRKaX92MNJYDjt9qDce8qyClhMW0rOZsUl48GI5gfQ2F/hoEby', '(11) 98888-0003', true, 'dono')
 AS incoming
 ON DUPLICATE KEY UPDATE id = users.id;
+COMMIT;
