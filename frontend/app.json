@@ -84,7 +84,7 @@
       "expo-status-bar"
     ],
     "extra": {
-      "apiUrl": "http://192.168.3.52:3333",
+      "apiUrl": "http://localhost:3333",
       "eas": {
         "projectId": "25c4d129-ea78-4043-9710-f91ee6233bb1"
       }

@@ -8,16 +8,19 @@ import { fonts, radius, spacing } from "@/theme/typography";
 import { ScreenHeader } from "@/components/ScreenHeader";
 import { Pill } from "@/components/Pill";
 import { PrimaryButton, SecondaryButton } from "@/components/Buttons";
+import { EstablishmentReviewsSection } from "@/components/EstablishmentReviewsSection";
 import { useAppNavigation } from "@/navigation/useAppNavigation";
 import { establishmentsService } from "@/services/establishmentsService";
 import { favoritesService } from "@/services/favoritesService";
 import { emergencyService } from "@/services/emergencyService";
+
 export function EstablishmentDetailScreen() {
   const navigation = useAppNavigation();
   const route = useRoute();
   const [item, setItem] = useState(null);
   const [loadError, setLoadError] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+
   useEffect(() => {
     establishmentsService
       .getById(route.params.id)
@@ -41,6 +44,7 @@ export function EstablishmentDetailScreen() {
         setLoadError(true);
       });
   }, [route.params.id]);
+
   async function toggleFavorite() {
     if (!item) return;
     try {
@@ -61,6 +65,7 @@ export function EstablishmentDetailScreen() {
       );
     }
   }
+
   async function handleRoute() {
     if (!item) return;
     try {
@@ -78,6 +83,7 @@ export function EstablishmentDetailScreen() {
       );
     }
   }
+
   if (!item) {
     return (
       <View
@@ -106,6 +112,7 @@ export function EstablishmentDetailScreen() {
       </View>
     );
   }
+
   return (
     <ScrollView
       style={{
@@ -415,6 +422,8 @@ export function EstablishmentDetailScreen() {
           onPress={handleRoute}
         />
       </View>
+
+      <EstablishmentReviewsSection establishmentId={item.id} />
     </ScrollView>
   );
 }

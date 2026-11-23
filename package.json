@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/caiol21/Easy-Health#readme",
   "dependencies": {
+    "expo": "^58.0.26",
     "express": "^5.3.0",
     "node-cron": "^4.6.0"
   }

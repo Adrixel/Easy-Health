@@ -1,4 +1,5 @@
 import React from "react";
+import { TeamPanelScreen } from "@/screens/TeamPanelScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { colors } from "@/theme/colors";
 import { fonts } from "@/theme/typography";
@@ -86,6 +87,7 @@ export function RootNavigator({
           <Stack.Screen name="Medications" component={MedicationsScreen} />
           <Stack.Screen name="MentalHealth" component={MentalHealthScreen} />
           <Stack.Screen name="Caregivers" component={CaregiversScreen} />
+          <Stack.Screen name="TeamPanel" component={TeamPanelScreen} />
         </>
       )}
     </Stack.Navigator>

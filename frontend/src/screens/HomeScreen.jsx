@@ -262,6 +262,14 @@ export function HomeScreen() {
             icon="calendar-outline"
             onPress={() => navigation.navigate("History")}
           />
+
+          <Tile
+            label="Painel Equipa"
+            desc="Gestão e clínicas"
+            icon="briefcase-outline"
+           onPress={() => navigation.navigate("TeamPanel")}
+          />
+          
         </View>
 
         {/* Próximas consultas */}
