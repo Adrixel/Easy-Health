@@ -10,11 +10,13 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { AppAlert as Alert } from "@/services/appAlert";
 import { colors } from "@/theme/colors";
 import { fonts, radius, spacing } from "@/theme/typography";
 import { PillTabs } from "@/components/PillTabs";
 import { Pill } from "@/components/Pill";
+import { ShareHistoryModal } from "@/components/ShareHistoryModal";
 import { useAppNavigation } from "@/navigation/useAppNavigation";
 import { historyService } from "@/services/historyService";
 import { authService } from "@/services/authService";
@@ -132,6 +134,7 @@ export function HistoryScreen() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [shareModalVisible, setShareModalVisible] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [refreshVersion, setRefreshVersion] = useState(0);
@@ -158,6 +161,14 @@ export function HistoryScreen() {
       active = false;
     };
   }, [aba, refreshVersion, showToast]);
+
+  async function handleOpenShare() {
+    if (!(await authService.isAuthenticated())) {
+      showToast("Entre na sua conta para compartilhar seu histórico.");
+      return;
+    }
+    setShareModalVisible(true);
+  }
 
   async function handleAddRecord() {
     if (!(await authService.isAuthenticated())) {
@@ -266,16 +277,54 @@ export function HistoryScreen() {
           paddingBottom: 100,
         }}
       >
-        <Text
+        <View
           style={{
-            fontFamily: fonts.bold,
-            fontSize: 19,
-            color: colors.ink,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
             marginBottom: 16,
           }}
         >
-          Meu Histórico
-        </Text>
+          <Text
+            style={{
+              fontFamily: fonts.bold,
+              fontSize: 19,
+              color: colors.ink,
+            }}
+          >
+            Meu Histórico
+          </Text>
+
+          <Pressable
+            onPress={handleOpenShare}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 6,
+              backgroundColor: colors.primarySoft,
+              paddingHorizontal: 12,
+              paddingVertical: 8,
+              borderRadius: radius.md,
+              borderWidth: 1,
+              borderColor: colors.primary,
+            }}
+          >
+            <Ionicons
+              name="share-social-outline"
+              size={16}
+              color={colors.primaryDark}
+            />
+            <Text
+              style={{
+                fontFamily: fonts.semiBold,
+                fontSize: 12.5,
+                color: colors.primaryDark,
+              }}
+            >
+              Compartilhar
+            </Text>
+          </Pressable>
+        </View>
 
         <View
           style={{
@@ -605,6 +654,11 @@ export function HistoryScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
+
+      <ShareHistoryModal
+        visible={shareModalVisible}
+        onClose={() => setShareModalVisible(false)}
+      />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { TeamPanelScreen } from "@/screens/TeamPanelScreen";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { colors } from "@/theme/colors";
 import { fonts } from "@/theme/typography";
@@ -17,6 +18,9 @@ import { NotificationsScreen } from "@/screens/NotificationsScreen";
 import { FavoritesScreen } from "@/screens/FavoritesScreen";
 import { EditProfileScreen } from "@/screens/EditProfileScreen";
 import { MainTabsNavigator } from "./MainTabsNavigator";
+import { MedicationsScreen } from "@/screens/MedicationsScreen";
+import { MentalHealthScreen } from "@/screens/MentalHealthScreen";
+import { CaregiversScreen } from "@/screens/CaregiversScreen";
 const Stack = createNativeStackNavigator();
 export function RootNavigator({
   isAuthenticated,
@@ -80,6 +84,10 @@ export function RootNavigator({
           <Stack.Screen name="Notifications" component={NotificationsScreen} />
           <Stack.Screen name="Favorites" component={FavoritesScreen} />
           <Stack.Screen name="EditProfile" component={EditProfileScreen} />
+          <Stack.Screen name="Medications" component={MedicationsScreen} />
+          <Stack.Screen name="MentalHealth" component={MentalHealthScreen} />
+          <Stack.Screen name="Caregivers" component={CaregiversScreen} />
+          <Stack.Screen name="TeamPanel" component={TeamPanelScreen} />
         </>
       )}
     </Stack.Navigator>
