@@ -71,4 +71,14 @@ class AuthServiceTest {
                 () -> auth.login(new LoginRequest("maria@example.com", "senha-incorreta")));
         verify(tokens, never()).save(anyString(), anyString(), anyString(), org.mockito.ArgumentMatchers.any());
     }
+
+    @Test
+    void demoPasswordHashMatchesSenha123() {
+        String hash = "$2a$10$TkitRKaX92MNJYDjt9qDce8qyClhMW0rOZsUl48GI5gfQ2F/hoEby";
+
+        org.junit.jupiter.api.Assertions.assertTrue(
+                passwordEncoder.matches("senha123", hash),
+                "O hash do SQL deve corresponder à senha senha123"
+        );
+    }
 }
